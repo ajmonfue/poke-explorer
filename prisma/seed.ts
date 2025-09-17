@@ -46,8 +46,8 @@ const POKEMON_DATA: Array<{
     description: string;
     dex: number;
     generationHandle: string;
-    types: string[];
-    evolutionFamily: string;
+    types: Array<string>;
+    evolutionLines: Array<string>;
     evolutionStage: number;
 }> = [
         // Bulbasaur
@@ -58,7 +58,7 @@ const POKEMON_DATA: Array<{
             dex: 1,
             generationHandle: 'generation-i',
             types: ['grass', 'poison'],
-            evolutionFamily: 'bulbasaur',
+            evolutionLines: ['bulbasaur'],
             evolutionStage: 1,
         },
         {
@@ -68,7 +68,7 @@ const POKEMON_DATA: Array<{
             dex: 2,
             generationHandle: 'generation-i',
             types: ['grass', 'poison'],
-            evolutionFamily: 'bulbasaur',
+            evolutionLines: ['bulbasaur'],
             evolutionStage: 2,
         },
         {
@@ -78,7 +78,7 @@ const POKEMON_DATA: Array<{
             dex: 3,
             generationHandle: 'generation-i',
             types: ['grass', 'poison'],
-            evolutionFamily: 'bulbasaur',
+            evolutionLines: ['bulbasaur'],
             evolutionStage: 3,
         },
 
@@ -90,7 +90,7 @@ const POKEMON_DATA: Array<{
             dex: 4,
             generationHandle: 'generation-i',
             types: ['fire'],
-            evolutionFamily: 'charmander',
+            evolutionLines: ['charmander'],
             evolutionStage: 1,
         },
         {
@@ -100,7 +100,7 @@ const POKEMON_DATA: Array<{
             dex: 5,
             generationHandle: 'generation-i',
             types: ['fire'],
-            evolutionFamily: 'charmander',
+            evolutionLines: ['charmander'],
             evolutionStage: 2,
         },
         {
@@ -110,7 +110,7 @@ const POKEMON_DATA: Array<{
             dex: 6,
             generationHandle: 'generation-i',
             types: ['fire', 'flying'],
-            evolutionFamily: 'charmander',
+            evolutionLines: ['charmander'],
             evolutionStage: 3,
         },
 
@@ -122,7 +122,7 @@ const POKEMON_DATA: Array<{
             dex: 7,
             generationHandle: 'generation-i',
             types: ['water'],
-            evolutionFamily: 'squirtle',
+            evolutionLines: ['squirtle'],
             evolutionStage: 1,
         },
         {
@@ -132,7 +132,7 @@ const POKEMON_DATA: Array<{
             dex: 8,
             generationHandle: 'generation-i',
             types: ['water'],
-            evolutionFamily: 'squirtle',
+            evolutionLines: ['squirtle'],
             evolutionStage: 2,
         },
         {
@@ -142,7 +142,7 @@ const POKEMON_DATA: Array<{
             dex: 9,
             generationHandle: 'generation-i',
             types: ['water'],
-            evolutionFamily: 'squirtle',
+            evolutionLines: ['squirtle'],
             evolutionStage: 3,
         },
 
@@ -154,7 +154,7 @@ const POKEMON_DATA: Array<{
             dex: 172,
             generationHandle: 'generation-ii',
             types: ['electric'],
-            evolutionFamily: 'pichu',
+            evolutionLines: ['pichu'],
             evolutionStage: 1,
         },
         {
@@ -164,7 +164,7 @@ const POKEMON_DATA: Array<{
             dex: 25,
             generationHandle: 'generation-i',
             types: ['electric'],
-            evolutionFamily: 'pichu',
+            evolutionLines: ['pichu'],
             evolutionStage: 2,
         },
         {
@@ -174,7 +174,7 @@ const POKEMON_DATA: Array<{
             dex: 26,
             generationHandle: 'generation-i',
             types: ['electric'],
-            evolutionFamily: 'pichu',
+            evolutionLines: ['pichu'],
             evolutionStage: 3,
         },
 
@@ -186,7 +186,7 @@ const POKEMON_DATA: Array<{
             dex: 133,
             generationHandle: 'generation-i',
             types: ['normal'],
-            evolutionFamily: 'eevee',
+            evolutionLines: ['eevee'],
             evolutionStage: 1,
         },
         {
@@ -196,7 +196,7 @@ const POKEMON_DATA: Array<{
             dex: 134,
             generationHandle: 'generation-i',
             types: ['water'],
-            evolutionFamily: 'eevee',
+            evolutionLines: ['eevee', 'vaporeon'],
             evolutionStage: 2,
         },
         {
@@ -206,7 +206,7 @@ const POKEMON_DATA: Array<{
             dex: 135,
             generationHandle: 'generation-i',
             types: ['electric'],
-            evolutionFamily: 'eevee',
+            evolutionLines: ['eevee', 'jolteon'],
             evolutionStage: 2,
         },
         {
@@ -216,7 +216,7 @@ const POKEMON_DATA: Array<{
             dex: 136,
             generationHandle: 'generation-i',
             types: ['fire'],
-            evolutionFamily: 'eevee',
+            evolutionLines: ['eevee', 'flareon'],
             evolutionStage: 2,
         },
         {
@@ -226,7 +226,7 @@ const POKEMON_DATA: Array<{
             dex: 196,
             generationHandle: 'generation-ii',
             types: ['psychic'],
-            evolutionFamily: 'eevee',
+            evolutionLines: ['eevee', 'espeon'],
             evolutionStage: 2,
         },
         {
@@ -236,7 +236,7 @@ const POKEMON_DATA: Array<{
             dex: 197,
             generationHandle: 'generation-ii',
             types: ['dark'],
-            evolutionFamily: 'eevee',
+            evolutionLines: ['eevee', 'umbreon'],
             evolutionStage: 2,
         },
         {
@@ -246,7 +246,7 @@ const POKEMON_DATA: Array<{
             dex: 470,
             generationHandle: 'generation-iv',
             types: ['grass'],
-            evolutionFamily: 'eevee',
+            evolutionLines: ['eevee', 'leafeon'],
             evolutionStage: 2,
         },
         {
@@ -256,7 +256,7 @@ const POKEMON_DATA: Array<{
             dex: 471,
             generationHandle: 'generation-iv',
             types: ['ice'],
-            evolutionFamily: 'eevee',
+            evolutionLines: ['eevee', 'glaceon'],
             evolutionStage: 2,
         },
         {
@@ -266,7 +266,7 @@ const POKEMON_DATA: Array<{
             dex: 700,
             generationHandle: 'generation-vi',
             types: ['fairy'],
-            evolutionFamily: 'eevee',
+            evolutionLines: ['eevee', 'sylveon'],
             evolutionStage: 2,
         },
     ];
@@ -307,7 +307,7 @@ async function main() {
                 imageUrl: officialArtwork(p.dex),
                 generationId,
                 nameSearch: p.name.toLowerCase(),
-                evolutionFamily: p.evolutionFamily,
+                evolutionLines: p.evolutionLines,
                 evolutionStage: p.evolutionStage,
             },
         });

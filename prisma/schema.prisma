@@ -34,7 +34,7 @@ model Pokemon {
   createdAt    DateTime              @default(now()) @map("created_at")
   updatedAt    DateTime              @updatedAt @map("updated_at")
   nameSearch   String?               @map("name_search")
-  evolutionFamily String @map("evolution_family")
+  evolutionLines String[] @map("evolution_lines")
   evolutionStage Int @map("evolution_stage")
 
   types        PokemonTypeRelation[]

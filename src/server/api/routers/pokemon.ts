@@ -36,12 +36,12 @@ const pokemonRouter = createTRPCRouter({
         const pokemonsMatched = await ctx.db.pokemon.findMany({
           where: { name: { contains: paramName, mode: "insensitive" } },
           select: {
-            evolutionFamily: true,
+            evolutionLines: true,
             id: true
           },
         });
 
-        const familiesSet = new Set(pokemonsMatched.map(pokemon => pokemon.evolutionFamily));
+        const evolutionLinesSet = new Set(pokemonsMatched.flatMap(pokemon => pokemon.evolutionLines));
         const pokemonIdsSet = new Set(pokemonsMatched.map(pokemon => pokemon.id));
 
         where.OR = [
@@ -50,7 +50,7 @@ const pokemonRouter = createTRPCRouter({
               in: Array.from(pokemonIdsSet),
             },
           },
-          { evolutionFamily: { in: Array.from(familiesSet) } },
+          { evolutionLines: { hasSome: Array.from(evolutionLinesSet) } },
         ]
 
         const pokemonsAndEvolutions = await findAllRequest();
