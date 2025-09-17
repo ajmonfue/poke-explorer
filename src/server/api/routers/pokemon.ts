@@ -1,9 +1,11 @@
 import { z } from "zod";
+import type { Pokemon, PokemonRelations } from "~/models/pokemon";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
+
 const pokemonRouter = createTRPCRouter({
-  findAll: publicProcedure.query(async ({ctx}) => {
+  findAll: publicProcedure.query<Array<PokemonRelations<Pokemon, 'generation' | 'types'>>>(async ({ctx}) => {
     return await ctx.db.pokemon.findMany({
       include: {
         generation: true,
@@ -29,13 +31,25 @@ const pokemonRouter = createTRPCRouter({
       });
     }),
 
-  getLatest: publicProcedure.query(async ({ ctx }) => {
-    const post = await ctx.db.pokemon.findFirst({
-      orderBy: { createdAt: "desc" },
-    });
+  findById: publicProcedure
+    .input(z.object({ id: z.number() })) 
+    .query<PokemonRelations<Pokemon, 'generation' | 'types'> | null>(async ({ ctx, input }) => {
+      const post = await ctx.db.pokemon.findUnique({
+        where: {
+          id: input.id,
+        },
+        include: {
+          generation: true,
+          types: {
+            include: {
+              pokemonType: true,
+            }
+          },
+        }
+      });
 
-    return post ?? null;
-  }),
+      return post ?? null;
+    }),
 });
 
 export default pokemonRouter;
