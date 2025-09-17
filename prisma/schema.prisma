@@ -31,6 +31,7 @@ model PokemonType {
 model Pokemon {
     id Int @id @default(autoincrement())
     name String
+    nameSearch String? @map("name_search") @db.Text
     description String
     imageUrl String @map("image_url")
     generationId Int @map("generation_id")

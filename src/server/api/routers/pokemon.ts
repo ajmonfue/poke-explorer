@@ -1,12 +1,24 @@
 import { z } from "zod";
+import { normalizeText } from "~/lib/normalize";
 import type { Pokemon, PokemonRelations } from "~/models/pokemon";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { Prisma } from '@prisma/client'
 
 
 const pokemonRouter = createTRPCRouter({
-  findAll: publicProcedure.query<Array<PokemonRelations<Pokemon, 'generation' | 'types'>>>(async ({ctx}) => {
+  findAll: publicProcedure
+  .input(z.object({ name: z.string().optional() }).optional())
+  .query<Array<PokemonRelations<Pokemon, 'generation' | 'types'>>>(async ({ctx, input}) => {
+    let where: Prisma.PokemonScalarWhereInput = {}
+    if (input?.name) {
+      where.nameSearch = {
+        contains: normalizeText(input.name)
+      }
+    }
+
     return await ctx.db.pokemon.findMany({
+      where,
       include: {
         generation: true,
         types: {
