@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { normalizeText } from "~/lib/normalize";
-import type { Pokemon, PokemonRelations } from "~/models/pokemon";
+import type { Pokemon, PokemonRelations, PokemonSearch } from "~/models/pokemon";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { Prisma } from '@prisma/client'
@@ -8,43 +8,66 @@ import { Prisma } from '@prisma/client'
 
 const pokemonRouter = createTRPCRouter({
   findAll: publicProcedure
-  .input(z.object({ name: z.string().optional() }).optional())
-  .query<Array<PokemonRelations<Pokemon, 'generation' | 'types'>>>(async ({ctx, input}) => {
-    let where: Prisma.PokemonScalarWhereInput = {}
-    if (input?.name) {
-      where.nameSearch = {
-        contains: normalizeText(input.name)
-      }
-    }
+    .input(z.object({ name: z.string().optional() }).optional())
+    .query<Array<PokemonRelations<Pokemon, 'generation' | 'types'> & PokemonSearch>>(async ({ ctx, input }) => {
+      const where: Prisma.PokemonScalarWhereInput = {}
+      const queryName = input?.name?.trim();
 
-    return await ctx.db.pokemon.findMany({
-      where,
-      include: {
-        generation: true,
-        types: {
+      const findAllRequest = async () => {
+        return await ctx.db.pokemon.findMany({
+          where,
           include: {
-            pokemonType: true,
+            generation: true,
+            types: {
+              include: {
+                pokemonType: true,
+              }
+            },
+          },
+          orderBy: {
+            id: 'asc'
           }
-        },
+        });
       }
-    });
-  }),
 
-  create: publicProcedure
-    .input(z.object({ name: z.string().min(1) }))
-    .mutation(async ({ ctx, input }) => {
-      return ctx.db.pokemon.create({
-        data: {
-          name: input.name,
-          description: '',
-          generationId: 0,
-          imageUrl: '',
-        },
-      });
+      if (queryName) {
+        const paramName = normalizeText(queryName);
+
+        const pokemonsMatched = await ctx.db.pokemon.findMany({
+          where: { name: { contains: paramName, mode: "insensitive" } },
+          select: {
+            evolutionFamily: true,
+            id: true
+          },
+        });
+
+        const familiesSet = new Set(pokemonsMatched.map(pokemon => pokemon.evolutionFamily));
+        const pokemonIdsSet = new Set(pokemonsMatched.map(pokemon => pokemon.id));
+
+        where.OR = [
+          {
+            id: {
+              in: Array.from(pokemonIdsSet),
+            },
+          },
+          { evolutionFamily: { in: Array.from(familiesSet) } },
+        ]
+
+        const pokemonsAndEvolutions = await findAllRequest();
+        return pokemonsAndEvolutions
+          .map((pokemon): PokemonRelations<Pokemon, 'generation' | 'types'> & PokemonSearch => {
+            return {
+              ...pokemon,
+              searchMatch: pokemonIdsSet.has(pokemon.id) ? 'contains' : 'evolution'
+            }
+          })
+      }
+
+      return await findAllRequest();
     }),
 
   findById: publicProcedure
-    .input(z.object({ id: z.number() })) 
+    .input(z.object({ id: z.number() }))
     .query<PokemonRelations<Pokemon, 'generation' | 'types'> | null>(async ({ ctx, input }) => {
       const post = await ctx.db.pokemon.findUnique({
         where: {

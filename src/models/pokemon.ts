@@ -17,3 +17,7 @@ type PokemonRelationMap = {
 }
 
 export type PokemonRelations<T, K extends keyof PokemonRelationMap> = T & { [P in K]: PokemonRelationMap[P] }
+
+export interface PokemonSearch {
+  searchMatch?: 'contains' | 'evolution'
+}
