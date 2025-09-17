@@ -1,56 +1,55 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Generation {
-    id Int @id @default(autoincrement())
-    name String
-    handle String
-    pokemons Pokemon[]
+  id       Int       @id @default(autoincrement())
+  name     String
+  handle   String
+  pokemons Pokemon[]
 
-    @@map("generations")
+  @@map("generations")
 }
 
 model PokemonType {
-    id Int @id @default(autoincrement())
-    name String
-    handle String
-    pokemons PokemonTypeRelation[]
+  id       Int                   @id @default(autoincrement())
+  name     String
+  handle   String
+  pokemons PokemonTypeRelation[]
 
-    @@map("pokemon_types")
+  @@map("pokemon_types")
 }
 
 model Pokemon {
-    id Int @id @default(autoincrement())
-    name String
-    nameSearch String? @map("name_search") @db.Text
-    description String
-    imageUrl String @map("image_url")
-    generationId Int @map("generation_id")
-    types PokemonTypeRelation[]
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @updatedAt @map("updated_at")
+  id           Int                   @id @default(autoincrement())
+  name         String
+  description  String
+  imageUrl     String                @map("image_url")
+  generationId Int                   @map("generation_id")
+  createdAt    DateTime              @default(now()) @map("created_at")
+  updatedAt    DateTime              @updatedAt @map("updated_at")
+  nameSearch   String?               @map("name_search")
+  evolutionFamily String @map("evolution_family")
+  evolutionStage Int @map("evolution_stage")
 
-    generation Generation @relation(fields: [generationId], references: [id], onDelete: Cascade)
+  types        PokemonTypeRelation[]
+  generation   Generation            @relation(fields: [generationId], references: [id], onDelete: Cascade)
 
-    @@map("pokemons")
+  @@index([nameSearch(ops: raw("gin_trgm_ops"))], map: "pokemon_name_search_trgm", type: Gin)
+  @@map("pokemons")
 }
 
 model PokemonTypeRelation {
-    pokemonId Int @map("pokemon_id")
-    pokemonTypeId Int @map("pokemon_type_id")
+  pokemonId     Int         @map("pokemon_id")
+  pokemonTypeId Int         @map("pokemon_type_id")
+  pokemon       Pokemon     @relation(fields: [pokemonId], references: [id], onDelete: Cascade)
+  pokemonType   PokemonType @relation(fields: [pokemonTypeId], references: [id], onDelete: Cascade)
 
-    pokemon Pokemon @relation(fields: [pokemonId], references: [id], onDelete: Cascade)
-    pokemonType PokemonType @relation(fields: [pokemonTypeId], references: [id], onDelete: Cascade)
-
-    @@id([pokemonId, pokemonTypeId])
-    @@map("pokemon_type_relations")
+  @@id([pokemonId, pokemonTypeId])
+  @@map("pokemon_type_relations")
 }
