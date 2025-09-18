@@ -35,10 +35,10 @@ export function PokemonListItem({pokemon}: {pokemon: PokemonRelations<Pokemon, '
             {pokemon.name}
           </h2>
           <div className="flex gap-2 mt-1">
-            { (pokemon.types ?? []).map((pokemonTypeRelation, idx) => pokemonTypeRelation.pokemonType ?
+            { (pokemon.types ?? []).map((pokemonType) => pokemonType &&
               (
-                <PokemonTypeTag key={idx} pokemonType={pokemonTypeRelation.pokemonType}></PokemonTypeTag>
-              ) : (<></>)) }
+                <PokemonTypeTag key={pokemonType.id} pokemonType={pokemonType}></PokemonTypeTag>
+              )) }
           </div>
           <div className="text-sm text-gray-500 mt-1">
             { pokemon.generation.name }

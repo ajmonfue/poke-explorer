@@ -46,10 +46,10 @@ export default async function Page({ params }: PokemonPageProps) {
                                         {pokemon.name}
                                     </h1>
                                     <div className="flex gap-2 mt-2">
-                                        { (pokemon.types ?? []).map((pokemonTypeRelation, idx) => pokemonTypeRelation.pokemonType ?
+                                        { (pokemon.types ?? []).map((pokemonType) => pokemonType &&
                                             (
-                                            <PokemonTypeTag key={idx} pokemonType={pokemonTypeRelation.pokemonType}></PokemonTypeTag>
-                                            ) : (<></>))
+                                                <PokemonTypeTag key={pokemonType.id} pokemonType={pokemonType}></PokemonTypeTag>
+                                            ))
                                         }
                                     </div>
                                     <div className="text-gray-600 mt-2">

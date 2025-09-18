@@ -1,25 +1,30 @@
 import type { Generation } from "./generation"
-import type { PokemonTypeRelation } from "./pokemon-type-relation"
+import type { PokemonType } from "./pokemon-type"
+
 
 export interface Pokemon {
     id: number
     name: string
     description: string
     imageUrl: string
-    generationId: number
+    //generationId: number
     evolutionLines: Array<string>;
     evolutionStage: number;
-    createdAt: Date
-    updatedAt: Date
+    //createdAt: Date
+    //updatedAt: Date
 }
 
 type PokemonRelationMap = {
-  types: Array<PokemonTypeRelation>
-  generation: Generation;
+    types: Array<PokemonType>
+    generation: Generation;
 }
 
 export type PokemonRelations<T, K extends keyof PokemonRelationMap> = T & { [P in K]: PokemonRelationMap[P] }
 
 export interface PokemonSearch {
-  searchMatch?: 'contains' | 'evolution'
+    searchMatch?: 'contains' | 'evolution'
+}
+
+export interface PokemonEvolvable extends Pokemon {
+    nextEvolutions: Array<PokemonEvolvable>
 }

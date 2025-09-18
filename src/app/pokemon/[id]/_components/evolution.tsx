@@ -1,10 +1,7 @@
 import Link from "next/link"
 import { clx } from "~/lib/utils"
-import type { Pokemon } from "~/models/pokemon"
+import type { Pokemon, PokemonEvolvable } from "~/models/pokemon"
 
-export interface PokemonEvolvable extends Pokemon {
-    nextEvolutions: Array<PokemonEvolvable>
-}
 
 export function Evolution({pokemon, isRoot = false, currentPokemon}: {pokemon: PokemonEvolvable, isRoot?: boolean, currentPokemon: Pokemon}) {
     return (
