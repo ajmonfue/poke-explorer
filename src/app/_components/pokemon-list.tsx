@@ -7,6 +7,17 @@ import { PokemonListItem } from "./pokemon-list-item";
 import { Button } from "~/components/ui/button";
 import { usePokemonListStore } from "~/lib/store";
 import { ITEMS_PER_PAGE } from "~/lib/constants";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select"
+import { Input } from "~/components/ui/input"
 
 export function PokemonList() {
     const { filters, setFilters, resetFilters, setCurrentPage } = usePokemonListStore()
@@ -22,6 +33,8 @@ export function PokemonList() {
             name: debouncedSearch || undefined,
             limit: ITEMS_PER_PAGE,
             offset: (filters.currentPage - 1) * ITEMS_PER_PAGE,
+            type: filters.type || undefined,
+            generation: filters.generation || undefined,
         },
         {
             placeholderData: (prev) => prev,
@@ -38,27 +51,69 @@ export function PokemonList() {
                         <div className="flex flex-col md:flex-row gap-4">
                             <div className="flex-grow">
                                 <div className="relative">
-                                    <input
+                                    <Input
                                         type="text"
                                         placeholder="Search Pokémon by name..."
-                                        className="w-full py-2 pl-10 pr-4 border-0 bg-gray-100 rounded focus:ring-1 focus:ring-primary-500 focus:outline-none"
+                                        className="w-full py-2 pl-10 pr-4 focus:ring-1 focus:ring-primary-500 focus:outline-none"
                                         value={filters.search}
                                         onChange={(e) => setFilters({search: e.target.value})}
                                     />
-                                    <span className="material-symbols-outlined absolute left-3 top-2 text-gray-400">
-                                        search
+                                    <span className="absolute left-3 top-0 h-full flex items-center">
+                                        <span className="material-symbols-outlined text-gray-400">
+                                            search
+                                        </span>
                                     </span>
+                                    
                                 </div>
                             </div>
                             <div className="flex gap-4">
-                                <select className="py-2 px-3 border-0 bg-gray-100 rounded focus:ring-1 focus:ring-primary-500 focus:outline-none">
-                                    <option value="">All Types</option>
-                                    <option value="electric">Electric</option>
-                                </select>
-                                <select className="py-2 px-3 border-0 bg-gray-100 rounded focus:ring-1 focus:ring-primary-500 focus:outline-none">
-                                    <option value="">All Generations</option>
-                                    <option value="generation_1">Generation I</option>
-                                </select>
+                                <Select onValueChange={(value) => setFilters({type: value})} value={filters.type ?? ""}>
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="Select a type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectLabel>Types</SelectLabel>
+                                            <SelectItem value="electric">Electric</SelectItem>
+                                        </SelectGroup>
+                                        <SelectSeparator />
+                                        <Button
+                                            className="w-full px-2"
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                setFilters({type: null})
+                                            }}>
+                                            Clear
+                                        </Button>
+                                    </SelectContent>
+                                </Select>
+
+                                <Select onValueChange={(value) => setFilters({generation: value})} value={filters.generation ?? ""}>
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="Select a generation" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectLabel>Generations</SelectLabel>
+                                            <SelectItem value="generation-i">Generation I</SelectItem>
+                                        </SelectGroup>
+                                        <SelectSeparator />
+                                        <Button
+                                            className="w-full px-2"
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                setFilters({generation: null})
+                                            }}>
+                                            Clear
+                                        </Button>
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
                     </div>
