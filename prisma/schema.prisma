@@ -37,6 +37,15 @@ model Pokemon {
   evolutionLines String[] @map("evolution_lines")
   evolutionStage Int @map("evolution_stage")
 
+  height Int
+  weight Int
+  hp Int?
+  attack Int?
+  defense Int?
+  specialAttack Int? @map("special_attack")
+  specialDefense Int? @map("special_defense")
+  speed Int?
+
   types        PokemonTypeRelation[]
   generation   Generation            @relation(fields: [generationId], references: [id], onDelete: Cascade)
 

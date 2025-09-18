@@ -15,6 +15,7 @@ import type { Generation } from "~/models/generation";
 export class PokeApiDataSource implements IDataSourceAdapter {
     private readonly baseUrl = 'https://pokeapi.co/api/v2';
     private readonly language = 'en';
+    private readonly fallbackPokemonImage = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png';
     private readonly pokemonsCachekey = 'pokemons';
     private _cache = new Map<string, { data: any; timestamp: number }>()
     private readonly CACHE_DURATION = 5 * 60 * 1000;
@@ -98,7 +99,7 @@ export class PokeApiDataSource implements IDataSourceAdapter {
         return null;
     }
 
-    private async getAllPokemons(): Promise<Array<PokemonRelations<Pokemon, "generation" | "types">>> {
+    public async getAllPokemons(): Promise<Array<PokemonRelations<Pokemon, "generation" | "types">>> {
         const typesMap = (await this.getPokemonTypes()).reduce((map, item) => {
             map.set(item.handle, item);
             return map;
@@ -147,7 +148,7 @@ export class PokeApiDataSource implements IDataSourceAdapter {
             const pokemonGeneration = generationsMap.get(specie.generation.name)!;
             return {
                 name: specie.names.find(n => n.language.name == this.language)?.name ?? apiPokemon.name,
-                imageUrl: apiPokemon.sprites.other?.["official-artwork"]?.front_default || apiPokemon.sprites.front_default,
+                imageUrl: apiPokemon.sprites.other?.["official-artwork"]?.front_default || apiPokemon.sprites.front_default || this.fallbackPokemonImage,
                 description: description,
                 types: apiPokemon.types
                     .map((t): PokemonType | null => typesMap.get(t.type.name) ?? null)
