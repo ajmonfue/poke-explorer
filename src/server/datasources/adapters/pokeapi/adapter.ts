@@ -8,6 +8,8 @@ import type { PokeApiPokemonSpecie } from "./types/specie";
 import type { PokeApiEvolution, PokeApiEvolutionChain } from "./types/evolution-chain";
 import type { PokeApiGeneration, PokeApiGenerationListItem } from "./types/generation";
 import { normalizeText } from "~/lib/normalize";
+import type { Page } from "~/models/pagination";
+import type { PokemonListFilter } from "~/models/filters";
 
 export class PokeApiDataSource implements IDataSourceAdapter {
     private readonly baseUrl = 'https://pokeapi.co/api/v2';
@@ -159,12 +161,20 @@ export class PokeApiDataSource implements IDataSourceAdapter {
             }
         });
     }
-    async findAllPokemons(filters: { name?: string; }): Promise<Array<PokemonRelations<Pokemon, "generation" | "types"> & PokemonSearch>> {
+    async findAllPokemons(filters: PokemonListFilter): Promise<Page<PokemonRelations<Pokemon, "generation" | "types"> & PokemonSearch>> {
         const pokemons = await this.cache(this.pokemonsCachekey, () => this.getAllPokemons(), 0);
         let filteredPokemons = pokemons;
         
+        if (filters.type) {
+            filteredPokemons = filteredPokemons.filter(p => p.types.some(type => type.handle == filters.type));
+        }
+
+        if (filters.generation) {
+            filteredPokemons = filteredPokemons.filter(p => p.generation.handle == filters.generation);
+        }
+        
         if (filters.name) {
-            const pokemonsMatch = pokemons
+            const pokemonsMatch = filteredPokemons
                 .filter(pokemon =>
                     normalizeText(pokemon.name).includes(filters.name!)
                 );
@@ -172,7 +182,7 @@ export class PokeApiDataSource implements IDataSourceAdapter {
             const pokemonIds = new Set(pokemonsMatch.map(p => p.id));
             const linesSet = new Set(pokemonsMatch.flatMap(p => p.evolutionLines));
 
-            filteredPokemons = pokemons
+            filteredPokemons = filteredPokemons
                 .filter(pokemon => {
                     return pokemonIds.has(pokemon.id) || pokemon.evolutionLines.some(line => linesSet.has(line));
                 })
@@ -182,7 +192,12 @@ export class PokeApiDataSource implements IDataSourceAdapter {
                 }));
         }
 
-        return filteredPokemons;
+        return {
+            count: filteredPokemons.length,
+            currentPage: Math.floor(filters.offset / filters.limit) + 1,
+            data: filteredPokemons.slice(filters.offset, filters.offset + filters.limit),
+            isLast: (filteredPokemons.length + filters.offset) >= filters.limit,
+        };
     }
     async findPokemonById(id: number): Promise<PokemonRelations<Pokemon, "generation" | "types"> | null> {
         const pokemons = await this.cache(this.pokemonsCachekey, () => this.getAllPokemons(), 0);

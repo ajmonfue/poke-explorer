@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { clx } from "~/lib/utils"
+import { cn } from "~/lib/utils"
 import type { Pokemon, PokemonEvolvable } from "~/models/pokemon"
 
 
@@ -17,7 +17,7 @@ export function Evolution({pokemon, isRoot = false, currentPokemon}: {pokemon: P
             )}
             
             <Link href={`/pokemon/${pokemon.id}`}>
-                <div className={clx('flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg transition-colors self-start border', pokemon.id == currentPokemon.id ? 'border-black' : 'border-transparent')}>
+                <div className={cn('flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg transition-colors self-start border', pokemon.id == currentPokemon.id ? 'border-black' : 'border-transparent')}>
                     <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-2">
                         <img
                             src={pokemon.imageUrl}
@@ -33,7 +33,7 @@ export function Evolution({pokemon, isRoot = false, currentPokemon}: {pokemon: P
             </Link>
 
             { pokemon.nextEvolutions.length > 0 && (
-                <div className={clx('flex flex-col gap-2',{'border-l border-gray-100 pl-2 ml-3': pokemon.nextEvolutions.length > 1})}>
+                <div className={cn('flex flex-col gap-2',{'border-l border-gray-100 pl-2 ml-3': pokemon.nextEvolutions.length > 1})}>
                     {pokemon.nextEvolutions.map(pokemon => (
                         <Evolution key={pokemon.id} pokemon={pokemon} currentPokemon={currentPokemon}></Evolution>
                     ))}

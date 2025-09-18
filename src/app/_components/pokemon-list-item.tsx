@@ -1,12 +1,12 @@
 import type { Pokemon, PokemonRelations, PokemonSearch } from "~/models/pokemon";
 import { PokemonTypeTag } from "./pokemon-type-tag";
-import { clx } from "~/lib/utils";
+import { cn } from "~/lib/utils";
 import styles from './pokemon-list-item.module.css';
 
 
 export function PokemonListItem({pokemon}: {pokemon: PokemonRelations<Pokemon, 'types' | 'generation'> & PokemonSearch}) {
   return <div
-      className={clx(
+      className={cn(
         'bg-white p-4 rounded shadow-sm hover:shadow transition-shadow cursor-pointer relative',
         {
           [styles.matchEvolution!]: pokemon.searchMatch == 'evolution',

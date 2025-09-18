@@ -3,6 +3,8 @@ import type { IDataSourceAdapter } from "../../ports";
 import { db as dbClient } from "./db";
 import type { Prisma } from "@prisma/client";
 import { normalizeText } from "~/lib/normalize";
+import type { Page } from "~/models/pagination";
+import type { PokemonListFilter } from "~/models/filters";
 
 export class PrismaDataSource implements IDataSourceAdapter {
     private readonly db = dbClient;
@@ -18,25 +20,58 @@ export class PrismaDataSource implements IDataSourceAdapter {
         });
     }
 
-    async findAllPokemons(filters: { name?: string; }): Promise<Array<PokemonRelations<Pokemon, "generation" | "types"> & PokemonSearch>> {
-        const where: Prisma.PokemonScalarWhereInput = {}
+    async findAllPokemons(filters: PokemonListFilter): Promise<Page<PokemonRelations<Pokemon, "generation" | "types"> & PokemonSearch>> {
+        const where: Prisma.PokemonWhereInput = {}
         const queryName = filters.name?.trim();
 
-        const findAllRequest = async () => {
-            return await this.db.pokemon.findMany({
-                where,
-                include: {
-                    generation: true,
-                    types: {
-                        include: {
-                            pokemonType: true,
-                        }
+        const request = async (): Promise<Page<PokemonRelations<Pokemon, "generation" | "types"> & PokemonSearch>> => {
+            const [count, rawPokemons] = await this.db.$transaction([
+                this.db.pokemon.count({ where }),
+                this.db.pokemon.findMany({
+                    where,
+                    include: {
+                        generation: true,
+                        types: {
+                            include: {
+                                pokemonType: true,
+                            }
+                        },
                     },
-                },
-                orderBy: {
-                    id: 'asc'
+                    skip: filters.offset,
+                    take: filters.limit,
+                    orderBy: {
+                        id: 'asc'
+                    }
+                })
+            ]);
+
+            const pokemons = rawPokemons.map((pokemon): PokemonRelations<Pokemon, 'generation' | 'types'> & PokemonSearch => ({
+                ...pokemon,
+                types: pokemon.types.map(t => t.pokemonType),
+            }));
+
+            return {
+                count,
+                currentPage: Math.floor(filters.offset / filters.limit) + 1,
+                data: pokemons,
+                isLast: filters.offset + pokemons.length >= count,
+            }
+        }
+
+        if (filters.type) {
+            where.types = {
+                some: {
+                    pokemonType: {
+                        handle: filters.type,
+                    }
                 }
-            });
+            }
+        }
+
+        if (filters.generation) {
+            where.generation = {
+                handle: filters.generation,
+            }
         }
 
         if (queryName) {
@@ -60,25 +95,17 @@ export class PrismaDataSource implements IDataSourceAdapter {
                     },
                 },
                 { evolutionLines: { hasSome: Array.from(evolutionLinesSet) } },
-            ]
+            ];
 
-            return (await findAllRequest())
-                .map((pokemon): PokemonRelations<Pokemon, 'generation' | 'types'> & PokemonSearch => {
-                    return {
-                        ...pokemon,
-                        types: pokemon.types.map(t => t.pokemonType),
-                        searchMatch: pokemonIdsSet.has(pokemon.id) ? 'contains' : 'evolution'
-                    }
-                })
+            const requestData = await request();
+            requestData.data.forEach((pokemon) => {
+                pokemon.searchMatch = pokemonIdsSet.has(pokemon.id) ? 'contains' : 'evolution';
+            });
+
+            return requestData;
         }
 
-        return (await findAllRequest())
-            .map((pokemon): PokemonRelations<Pokemon, 'generation' | 'types'> & PokemonSearch => {
-                return {
-                    ...pokemon,
-                    types: pokemon.types.map(t => t.pokemonType),
-                }
-            })
+        return await request();
     }
 
     async findPokemonById(id: number): Promise<PokemonRelations<Pokemon, "generation" | "types"> | null> {

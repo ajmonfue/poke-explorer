@@ -1,5 +1,6 @@
 import { z } from "zod";
-import type { Pokemon, PokemonEvolvable, PokemonRelations, PokemonSearch } from "~/models/pokemon";
+import type { Page } from "~/models/pagination";
+import type { Pokemon, PokemonRelations, PokemonSearch } from "~/models/pokemon";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 const pokemonRouter = createTRPCRouter({
@@ -10,9 +11,15 @@ const pokemonRouter = createTRPCRouter({
     }),
 
   findAll: publicProcedure
-    .input(z.object({ name: z.string().optional() }).optional())
-    .query<Array<PokemonRelations<Pokemon, 'generation' | 'types'> & PokemonSearch>>(async ({ ctx, input }) => {
-      return await ctx.datasource.findAllPokemons(input ?? {});
+    .input(z.object({
+      name: z.string().optional(),
+      type: z.string().optional(),
+      generation: z.string().optional(),
+      limit: z.number(),
+      offset: z.number()
+    }))
+    .query<Page<PokemonRelations<Pokemon, 'generation' | 'types'> & PokemonSearch>>(async ({ ctx, input }) => {
+      return await ctx.datasource.findAllPokemons(input);
     }),
 
   findById: publicProcedure
