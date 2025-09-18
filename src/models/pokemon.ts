@@ -1,17 +1,25 @@
 import type { Generation } from "./generation"
 import type { PokemonType } from "./pokemon-type"
 
+export interface PokemonStats {
+    hp: number | null;
+    attack: number | null;
+    defense: number | null;
+    specialAttack: number | null;
+    specialDefense: number | null;
+    speed: number | null;
+}
 
-export interface Pokemon {
+export interface Pokemon extends PokemonStats {
     id: number
     name: string
     description: string
     imageUrl: string
-    //generationId: number
     evolutionLines: Array<string>;
     evolutionStage: number;
-    //createdAt: Date
-    //updatedAt: Date
+
+    weight: number;
+    height: number;
 }
 
 type PokemonRelationMap = {

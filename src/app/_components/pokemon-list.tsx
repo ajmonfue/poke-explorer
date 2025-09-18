@@ -137,7 +137,7 @@ export function PokemonList() {
                     </div>
                 </div>
 
-                <div className="relative">
+                <div className="relative min-h-20">
                     {isFetching && (
                         <div className="absolute left-0 top-0 w-full h-full bg-background/60 z-1 flex items-center justify-center">
                             <LoaderCircle className="w-12 h-12 animate-spin text-muted-foreground" />

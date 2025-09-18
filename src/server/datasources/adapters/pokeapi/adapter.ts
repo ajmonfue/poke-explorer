@@ -1,7 +1,7 @@
 import type { Pokemon, PokemonRelations, PokemonSearch } from "~/models/pokemon";
 import type { IDataSourceAdapter } from "../../ports";
 import type { PokeApiApiList } from "./types/api";
-import type { PokeApiPokemon, PokeApiPokemonListItem } from "./types/pokemon";
+import { type PokeApiPokemon, type PokeApiPokemonListItem, PokeApiPokemonStat } from "./types/pokemon";
 import type { PokemonType } from "~/models/pokemon-type";
 import type { PokeApiType, PokeApiTypeListItem } from "./types/type";
 import type { PokeApiPokemonSpecie } from "./types/specie";
@@ -146,7 +146,7 @@ export class PokeApiDataSource implements IDataSourceAdapter {
 
             const pokemonGeneration = generationsMap.get(specie.generation.name)!;
             return {
-                name: apiPokemon.name,
+                name: specie.names.find(n => n.language.name == this.language)?.name ?? apiPokemon.name,
                 imageUrl: apiPokemon.sprites.other?.["official-artwork"]?.front_default || apiPokemon.sprites.front_default,
                 description: description,
                 types: apiPokemon.types
@@ -156,6 +156,16 @@ export class PokeApiDataSource implements IDataSourceAdapter {
                 evolutionStage: evolutionStage ?? 0,
                 id: apiPokemon.id,
                 generation: pokemonGeneration,
+                height: apiPokemon.height, // decimeters
+                weight: apiPokemon.weight,
+
+                // stats
+                attack: apiPokemon.stats.find(stat => stat.stat.name == PokeApiPokemonStat.ATTACK)?.base_stat ?? null,
+                defense: apiPokemon.stats.find(stat => stat.stat.name == PokeApiPokemonStat.DEFENSE)?.base_stat ?? null,
+                hp: apiPokemon.stats.find(stat => stat.stat.name == PokeApiPokemonStat.HP)?.base_stat ?? null,
+                specialAttack: apiPokemon.stats.find(stat => stat.stat.name == PokeApiPokemonStat.SPECIAL_ATTACK)?.base_stat ?? null,
+                specialDefense: apiPokemon.stats.find(stat => stat.stat.name == PokeApiPokemonStat.SPECIAL_DEFENSE)?.base_stat ?? null,
+                speed: apiPokemon.stats.find(stat => stat.stat.name == PokeApiPokemonStat.SPEED)?.base_stat ?? null,
             }
         });
     }

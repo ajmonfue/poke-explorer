@@ -4,12 +4,23 @@ import { PokemonTypeTag } from "~/app/_components/pokemon-type-tag";
 
 import { api, HydrateClient } from "~/trpc/server";
 import { EvolutionChain } from "./_components/evolution-chain";
+import type { PokemonStats } from "~/models/pokemon";
+import { PokemonStat } from "./_components/pokemon-stat";
 
 interface PokemonPageProps {
   params: Promise<{
     id: number
   }>
 }
+
+const pokemonStats: Array<keyof PokemonStats> = [
+    'attack',
+    'defense',
+    'hp',
+    'specialAttack',
+    'specialDefense',
+    'speed',
+]
 
 export default async function Page({ params }: PokemonPageProps) {
     const {id: paramId} = await params;
@@ -19,6 +30,7 @@ export default async function Page({ params }: PokemonPageProps) {
     const pokemon = await api.pokemon.findById({id: pokemonId});
     if (!pokemon) return notFound();
 
+    const total = pokemonStats.reduce((total, stat) => (pokemon[stat] ?? 0) + total, 0)
     return (
         <HydrateClient>
             <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -41,7 +53,11 @@ export default async function Page({ params }: PokemonPageProps) {
                                     />
                                 </div>
                                 <div className="flex-1">
-                                    <div className="text-gray-500 text-sm">#{String(pokemon.id).padStart(3, "0")}</div>
+                                    <div className="flex items-center">
+                                        <span className="text-gray-500">#{String(pokemon.id).padStart(3, "0")}</span>
+                                        <span className="w-[1px] round bg-gray-100 mx-3 h-4 inline-block"></span>
+                                        <span className="text-gray-500">{pokemon.generation.name}</span>
+                                    </div>
                                     <h1 className="text-3xl font-bold">
                                         {pokemon.name}
                                     </h1>
@@ -52,9 +68,6 @@ export default async function Page({ params }: PokemonPageProps) {
                                             ))
                                         }
                                     </div>
-                                    <div className="text-gray-600 mt-2">
-                                        { pokemon.generation?.name }
-                                    </div>
 
                                     <div className="flex items-center mt-6 gap-8">
                                         <div className="">
@@ -63,7 +76,7 @@ export default async function Page({ params }: PokemonPageProps) {
                                                 Weight
                                             </div>
                                             <div className="font-semibold pl-[20px]">
-                                                13kg
+                                                {parseFloat((pokemon.weight / 10).toFixed(2))}kg
                                             </div>
                                         </div>
                                         <div className="">
@@ -72,7 +85,7 @@ export default async function Page({ params }: PokemonPageProps) {
                                                 Height
                                             </div>
                                             <div className="font-semibold pl-[20px]">
-                                                13m
+                                                {parseFloat((pokemon.height / 10).toFixed(2))}m
                                             </div>
                                         </div>
                                     </div>
@@ -93,95 +106,24 @@ export default async function Page({ params }: PokemonPageProps) {
                     <div className="mt-4">
                         <div>
                             <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-                                <div className="lg:col-span-3">
-                                    <EvolutionChain pokemon={pokemon}></EvolutionChain>
-                                </div>
+                                { pokemon.evolutionLines.length > 0 && (
+                                    <div className="lg:col-span-3">
+                                        <EvolutionChain pokemon={pokemon}></EvolutionChain>
+                                    </div>
+                                )}
+                                
                                 <div className="lg:col-span-2">
                                     <div className="bg-white rounded-lg shadow-sm overflow-hidden p-6">
                                         <h2 className="text-xl font-semibold mb-4">Base Stats</h2>
                                         <div className="space-y-4">
-                                            <div>
-                                                <div className="flex justify-between mb-1">
-                                                    <span>HP</span>
-                                                    <span>45</span>
-                                                </div>
-                                                <div className="h-2 bg-gray-200 rounded-full">
-                                                    <div
-                                                        className="h-2 bg-red-400 rounded-full"
-                                                        style={{ width: "45%" }}
-                                                    ></div>
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <div className="flex justify-between mb-1">
-                                                    <span>Attack</span>
-                                                    <span>45</span>
-                                                </div>
-                                                <div className="h-2 bg-gray-200 rounded-full">
-                                                    <div
-                                                        className="h-2 bg-orange-400 rounded-full"
-                                                        style={{ width: "45%" }}
-                                                    ></div>
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <div className="flex justify-between mb-1">
-                                                    <span>Defense</span>
-                                                    <span>45</span>
-                                                </div>
-                                                <div className="h-2 bg-gray-200 rounded-full">
-                                                    <div
-                                                        className="h-2 bg-yellow-400 rounded-full"
-                                                        style={{ width: "45%" }}
-                                                    ></div>
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <div className="flex justify-between mb-1">
-                                                    <span>Sp. Attack</span>
-                                                    <span>45</span>
-                                                </div>
-                                                <div className="h-2 bg-gray-200 rounded-full">
-                                                    <div
-                                                        className="h-2 bg-blue-400 rounded-full"
-                                                        style={{ width: "45%" }}
-                                                    ></div>
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <div className="flex justify-between mb-1">
-                                                    <span>Sp. Defense</span>
-                                                    <span>45</span>
-                                                </div>
-                                                <div className="h-2 bg-gray-200 rounded-full">
-                                                    <div
-                                                        className="h-2 bg-green-400 rounded-full"
-                                                        style={{ width: "45%" }}
-                                                    ></div>
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <div className="flex justify-between mb-1">
-                                                    <span>Speed</span>
-                                                    <span>45</span>
-                                                </div>
-                                                <div className="h-2 bg-gray-200 rounded-full">
-                                                    <div
-                                                        className="h-2 bg-pink-400 rounded-full"
-                                                        style={{ width: "45%" }}
-                                                    ></div>
-                                                </div>
-                                            </div>
+                                            {pokemonStats.map(stat => pokemon[stat] && (
+                                                <PokemonStat key={stat} pokemonStats={pokemon} stat={stat}></PokemonStat>
+                                            ))}
 
                                             <div className="mt-2 pt-2">
                                                 <div className="flex justify-between font-bold">
                                                     <span>Total</span>
-                                                    <span>45</span>
+                                                    <span>{total}</span>
                                                 </div>
                                             </div>
                                         </div>

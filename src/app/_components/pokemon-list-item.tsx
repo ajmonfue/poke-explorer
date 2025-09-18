@@ -30,7 +30,11 @@ export function PokemonListItem({pokemon}: {pokemon: PokemonRelations<Pokemon, '
           />
         </div>
         <div>
-          <div className="text-sm text-gray-500">#{String(pokemon.id).padStart(3, "0")}</div>
+          <div className="flex items-center">
+            <span className="text-sm text-gray-400">#{String(pokemon.id).padStart(3, "0")}</span>
+            <span className="w-[1px] round bg-gray-100 mx-3 h-4 inline-block"></span>
+            <span className="text-sm text-gray-400">{pokemon.generation.name}</span>
+          </div>
           <h2 className="text-lg font-medium">
             {pokemon.name}
           </h2>
@@ -39,9 +43,6 @@ export function PokemonListItem({pokemon}: {pokemon: PokemonRelations<Pokemon, '
               (
                 <PokemonTypeTag key={pokemonType.id} pokemonType={pokemonType}></PokemonTypeTag>
               )) }
-          </div>
-          <div className="text-sm text-gray-500 mt-1">
-            { pokemon.generation.name }
           </div>
         </div>
       </div>

@@ -5,10 +5,26 @@ import type { PokeApiSpecieSimple } from "./specie";
 export interface PokeApiPokemonListItem extends PokeApiListItem {
 }
 
+export enum PokeApiPokemonStat {
+  HP = "hp",
+  ATTACK = "attack",
+  DEFENSE = "defense",
+  SPECIAL_ATTACK = "special-attack",
+  SPECIAL_DEFENSE = "special-defense",
+  SPEED = "speed",
+}
+
 export interface PokeApiPokemon {
     id: number;
     name: string;
-    stats: Array<any>;
+    stats: Array<{
+      base_stat: number
+      effort: number
+      stat: {
+        name: PokeApiPokemonStat
+        url: string
+      }
+    }>;
     types: Array<{
       slot: number,
       type: {

@@ -14,4 +14,8 @@ export interface PokeApiPokemonSpecie {
         }
     }>
     generation: PokeApiGenerationListItem,
+    names: Array<{
+        name: string;
+        language: PokeApiLanguage;
+    }>
 }
