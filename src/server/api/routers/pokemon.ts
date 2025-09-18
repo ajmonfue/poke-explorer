@@ -3,7 +3,7 @@ import type { Page } from "~/models/pagination";
 import type { Pokemon, PokemonRelations, PokemonSearch } from "~/models/pokemon";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
-const pokemonRouter = createTRPCRouter({
+const router = createTRPCRouter({
   findEvolutions: publicProcedure
     .input(z.object({ evolutionLines: z.string().array() }))
     .query<Array<Pokemon>>(async ({ ctx, input }) => {
@@ -19,14 +19,14 @@ const pokemonRouter = createTRPCRouter({
       offset: z.number()
     }))
     .query<Page<PokemonRelations<Pokemon, 'generation' | 'types'> & PokemonSearch>>(async ({ ctx, input }) => {
-      return await ctx.datasource.findAllPokemons(input);
+      return await ctx.datasource.findPokemons(input);
     }),
 
   findById: publicProcedure
     .input(z.object({ id: z.number() }))
     .query<PokemonRelations<Pokemon, 'generation' | 'types'> | null>(async ({ ctx, input }) => {
-      return await ctx.datasource.findPokemonById(input.id);
+      return await ctx.datasource.findPokemon(input.id);
     }),
 });
 
-export default pokemonRouter;
+export default router;

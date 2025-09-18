@@ -18,9 +18,10 @@ import {
   SelectValue,
 } from "~/components/ui/select"
 import { Input } from "~/components/ui/input"
+import { LoaderCircle } from "lucide-react";
 
 export function PokemonList() {
-    const { filters, setFilters, resetFilters, setCurrentPage } = usePokemonListStore()
+    const { filters, setFilters, setCurrentPage} = usePokemonListStore()
     const debouncedSearch = useDebounce(filters.search, 300);
 
     const {
@@ -43,6 +44,19 @@ export function PokemonList() {
 
     const totalPages = Math.ceil((pokemonsPage?.count ?? 0) / ITEMS_PER_PAGE);
 
+    const {
+        data: generations,
+        isLoading: generationsIsLoading,
+        isFetching: generationsIsFetching,
+        error: generationsError,
+    } = api.generation.findAll.useQuery();
+
+    const {
+        data: pokemonTypes,
+        isLoading: pokemonTypesIsLoading,
+        isFetching: pokemonTypesIsFetching,
+        error: pokemonTypesError,
+    } = api.pokemonType.findAll.useQuery();
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
             <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -67,14 +81,16 @@ export function PokemonList() {
                                 </div>
                             </div>
                             <div className="flex gap-4">
-                                <Select onValueChange={(value) => setFilters({type: value})} value={filters.type ?? ""}>
-                                    <SelectTrigger className="w-[180px]">
+                                <Select onValueChange={(value) => setFilters({type: value})} value={filters.type ?? ""} disabled={pokemonTypesIsLoading}>
+                                    <SelectTrigger className="w-[180px] cursor-pointer" loading={pokemonTypesIsLoading}>
                                         <SelectValue placeholder="Select a type" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
                                             <SelectLabel>Types</SelectLabel>
-                                            <SelectItem value="electric">Electric</SelectItem>
+                                            { pokemonTypes?.map(type => (
+                                                <SelectItem key={type.id} value={type.handle}>{type.name}</SelectItem>
+                                            ))}
                                         </SelectGroup>
                                         <SelectSeparator />
                                         <Button
@@ -91,14 +107,16 @@ export function PokemonList() {
                                     </SelectContent>
                                 </Select>
 
-                                <Select onValueChange={(value) => setFilters({generation: value})} value={filters.generation ?? ""}>
-                                    <SelectTrigger className="w-[180px]">
+                                <Select onValueChange={(value) => setFilters({generation: value})} value={filters.generation ?? ""} disabled={generationsIsLoading}>
+                                    <SelectTrigger className="w-[180px] cursor-pointer" loading={generationsIsLoading}>
                                         <SelectValue placeholder="Select a generation" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
                                             <SelectLabel>Generations</SelectLabel>
-                                            <SelectItem value="generation-i">Generation I</SelectItem>
+                                            { generations?.map(generation => (
+                                                <SelectItem key={generation.id} value={generation.handle}>{generation.name}</SelectItem>
+                                            ))}
                                         </SelectGroup>
                                         <SelectSeparator />
                                         <Button
@@ -119,16 +137,21 @@ export function PokemonList() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {pokemonsPage?.data.map((pokemon) => (
-                        <Link key={pokemon.id} href={`/pokemon/${pokemon.id}`}>
-                            <PokemonListItem key={pokemon.id} pokemon={pokemon}></PokemonListItem>
-                        </Link>
-                    ))}
+                <div className="relative">
+                    {isFetching && (
+                        <div className="absolute left-0 top-0 w-full h-full bg-background/60 z-1 flex items-center justify-center">
+                            <LoaderCircle className="w-12 h-12 animate-spin text-muted-foreground" />
+                        </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {pokemonsPage?.data.map((pokemon) => (
+                            <Link key={pokemon.id} href={`/pokemon/${pokemon.id}`}>
+                                <PokemonListItem key={pokemon.id} pokemon={pokemon}></PokemonListItem>
+                            </Link>
+                        ))}
+                    </div>
                 </div>
-                {isFetching && (
-                    <div className="text-gray-400 mt-2 text-center">Loading…</div>
-                )}
 
                 {totalPages > 1 && (
                     <div className="flex items-center justify-center gap-2 mt-8">

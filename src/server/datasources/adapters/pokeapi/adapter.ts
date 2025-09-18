@@ -10,6 +10,7 @@ import type { PokeApiGeneration, PokeApiGenerationListItem } from "./types/gener
 import { normalizeText } from "~/lib/normalize";
 import type { Page } from "~/models/pagination";
 import type { PokemonListFilter } from "~/models/filters";
+import type { Generation } from "~/models/generation";
 
 export class PokeApiDataSource implements IDataSourceAdapter {
     private readonly baseUrl = 'https://pokeapi.co/api/v2';
@@ -52,18 +53,24 @@ export class PokeApiDataSource implements IDataSourceAdapter {
         return filteredPokemons;
     }
 
-    private async fetchTypes(): Promise<Array<PokeApiType>> {
+    private async getPokemonTypes(): Promise<Array<PokemonType>> {
         const listResponse = await this.fetchWithCache<PokeApiApiList<PokeApiTypeListItem>>(`${this.baseUrl}/type`);
-        return await Promise.all(listResponse.results.map(item => {
-            return this.fetchWithCache<PokeApiType>(item.url);
-        }));
+        return await Promise.all(listResponse.results.map(item => this.fetchWithCache<PokeApiType>(item.url)))
+            .then(apiGenerations => apiGenerations.map(apiItem => ({
+                handle: apiItem.name,
+                name: apiItem.names.find(n => n.language.name == this.language)?.name ?? apiItem.name,
+                id: apiItem.id,
+            })));
     }
 
-    private async fetchGenerations(): Promise<Array<PokeApiGeneration>> {
+    private async getGenerations(): Promise<Array<Generation>> {
         const listResponse = await this.fetchWithCache<PokeApiApiList<PokeApiGenerationListItem>>(`${this.baseUrl}/generation`);
-        return await Promise.all(listResponse.results.map(item => {
-            return this.fetchWithCache<PokeApiGeneration>(item.url);
-        }));
+        return await Promise.all(listResponse.results.map(item => this.fetchWithCache<PokeApiGeneration>(item.url)))
+            .then(apiGenerations => apiGenerations.map(apiItem => ({
+                handle: apiItem.name,
+                name: apiItem.names.find(n => n.language.name == this.language)?.name ?? apiItem.name,
+                id: apiItem.id,
+            })));
     }
 
     private getEvolutionLines(pokemonToFound: string, lines: Array<string>, node: {evolution: PokeApiEvolution, siblings: number, stage: number}): number | null {
@@ -92,15 +99,15 @@ export class PokeApiDataSource implements IDataSourceAdapter {
     }
 
     private async getAllPokemons(): Promise<Array<PokemonRelations<Pokemon, "generation" | "types">>> {
-        const typesMap = (await this.fetchTypes()).reduce((map, type) => {
-            map.set(type.name, type);
+        const typesMap = (await this.getPokemonTypes()).reduce((map, item) => {
+            map.set(item.handle, item);
             return map;
-        }, new Map<string, PokeApiType>());
+        }, new Map<string, PokemonType>());
 
-        const generationsMap = (await this.fetchGenerations()).reduce((map, type) => {
-            map.set(type.name, type);
+        const generationsMap = (await this.getGenerations()).reduce((map, item) => {
+            map.set(item.handle, item);
             return map;
-        }, new Map<string, PokeApiGeneration>());
+        }, new Map<string, Generation>());
 
 
         const pokemonListResponse = await this.fetchWithCache<PokeApiApiList<PokeApiPokemonListItem>>(`${this.baseUrl}/pokemon?limit=10000&offset=0`);
@@ -137,31 +144,22 @@ export class PokeApiDataSource implements IDataSourceAdapter {
                 lines.reverse();
             }
 
-            const apiGeneration = generationsMap.get(specie.generation.name)!;
+            const pokemonGeneration = generationsMap.get(specie.generation.name)!;
             return {
                 name: apiPokemon.name,
                 imageUrl: apiPokemon.sprites.other?.["official-artwork"]?.front_default || apiPokemon.sprites.front_default,
                 description: description,
-                types: apiPokemon.types.map((t): PokemonType => {
-                    const type = typesMap.get(t.type.name);
-                    return {
-                        handle: t.type.name,
-                        id: type?.id ?? 0,
-                        name: type?.names.find(n => n.language.name == this.language)?.name ?? t.type.name
-                    }
-                }),
+                types: apiPokemon.types
+                    .map((t): PokemonType | null => typesMap.get(t.type.name) ?? null)
+                    .filter(t => t != null),
                 evolutionLines: lines,
                 evolutionStage: evolutionStage ?? 0,
                 id: apiPokemon.id,
-                generation: {
-                    id: apiGeneration.id,
-                    handle: apiGeneration.name,
-                    name: apiGeneration.names.find(n => n.language.name == this.language)?.name ?? apiGeneration.name
-                },
+                generation: pokemonGeneration,
             }
         });
     }
-    async findAllPokemons(filters: PokemonListFilter): Promise<Page<PokemonRelations<Pokemon, "generation" | "types"> & PokemonSearch>> {
+    async findPokemons(filters: PokemonListFilter): Promise<Page<PokemonRelations<Pokemon, "generation" | "types"> & PokemonSearch>> {
         const pokemons = await this.cache(this.pokemonsCachekey, () => this.getAllPokemons(), 0);
         let filteredPokemons = pokemons;
         
@@ -199,8 +197,16 @@ export class PokeApiDataSource implements IDataSourceAdapter {
             isLast: (filteredPokemons.length + filters.offset) >= filters.limit,
         };
     }
-    async findPokemonById(id: number): Promise<PokemonRelations<Pokemon, "generation" | "types"> | null> {
+    async findPokemon(id: number): Promise<PokemonRelations<Pokemon, "generation" | "types"> | null> {
         const pokemons = await this.cache(this.pokemonsCachekey, () => this.getAllPokemons(), 0);
         return pokemons.find(p => p.id == id) ?? null;
+    }
+
+    findGenerations(): Promise<Array<Generation>> {
+        return this.getGenerations()
+    }
+
+    findPokemonTypes(): Promise<Array<PokemonType>> {
+        return this.getPokemonTypes();
     }
 }

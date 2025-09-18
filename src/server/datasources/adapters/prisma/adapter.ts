@@ -5,6 +5,8 @@ import type { Prisma } from "@prisma/client";
 import { normalizeText } from "~/lib/normalize";
 import type { Page } from "~/models/pagination";
 import type { PokemonListFilter } from "~/models/filters";
+import type { Generation } from "~/models/generation";
+import type { PokemonType } from "~/models/pokemon-type";
 
 export class PrismaDataSource implements IDataSourceAdapter {
     private readonly db = dbClient;
@@ -20,7 +22,7 @@ export class PrismaDataSource implements IDataSourceAdapter {
         });
     }
 
-    async findAllPokemons(filters: PokemonListFilter): Promise<Page<PokemonRelations<Pokemon, "generation" | "types"> & PokemonSearch>> {
+    async findPokemons(filters: PokemonListFilter): Promise<Page<PokemonRelations<Pokemon, "generation" | "types"> & PokemonSearch>> {
         const where: Prisma.PokemonWhereInput = {}
         const queryName = filters.name?.trim();
 
@@ -108,7 +110,7 @@ export class PrismaDataSource implements IDataSourceAdapter {
         return await request();
     }
 
-    async findPokemonById(id: number): Promise<PokemonRelations<Pokemon, "generation" | "types"> | null> {
+    async findPokemon(id: number): Promise<PokemonRelations<Pokemon, "generation" | "types"> | null> {
         const pokemon = await this.db.pokemon.findUnique({
             where: {
                 id,
@@ -129,4 +131,19 @@ export class PrismaDataSource implements IDataSourceAdapter {
         } : null
     }
 
+    async findGenerations(): Promise<Array<Generation>> {
+        return await this.db.generation.findMany({
+            orderBy: {
+                id: 'asc'
+            }
+        });
+    }
+
+    async findPokemonTypes(): Promise<Array<PokemonType>> {
+        return await this.db.pokemonType.findMany({
+            orderBy: {
+                id: 'asc'
+            }
+        });
+    }
 }
