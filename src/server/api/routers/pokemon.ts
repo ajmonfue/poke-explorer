@@ -7,6 +7,19 @@ import { Prisma } from '@prisma/client'
 
 
 const pokemonRouter = createTRPCRouter({
+  findEvolutions: publicProcedure
+    .input(z.object({ evolutionLines: z.string().array() }))
+    .query<Array<Pokemon>>(async ({ ctx, input }) => {
+      return await ctx.db.pokemon.findMany({
+        where: {
+          evolutionLines: { hasSome: input.evolutionLines },
+        },
+        orderBy: {
+          evolutionStage: 'asc'
+        }
+      })
+    }),
+
   findAll: publicProcedure
     .input(z.object({ name: z.string().optional() }).optional())
     .query<Array<PokemonRelations<Pokemon, 'generation' | 'types'> & PokemonSearch>>(async ({ ctx, input }) => {

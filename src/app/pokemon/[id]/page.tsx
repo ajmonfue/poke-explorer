@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { PokemonTypeTag } from "~/app/_components/pokemon-type-tag";
 
 import { api, HydrateClient } from "~/trpc/server";
+import { EvolutionChain } from "./_components/evolution-chain";
 
 interface PokemonPageProps {
   params: Promise<{
@@ -93,68 +94,7 @@ export default async function Page({ params }: PokemonPageProps) {
                         <div>
                             <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
                                 <div className="lg:col-span-3">
-                                    <div className="bg-white rounded-lg shadow-sm overflow-hidden p-6">
-                                        <h2 className="text-xl font-semibold mb-4">Evolution Chain</h2>
-                                        <div className="flex flex-col md:flex-row md:flex-wrap items-center justify-center gap-2 md:gap-4">
-                                            <div className="flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg transition-colors">
-                                                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-2">
-                                                    <img
-                                                        src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
-                                                        alt="Bulbasaur"
-                                                        className="w-20 h-20 transform hover:scale-110 transition-transform duration-300"
-                                                    />
-                                                </div>
-                                                <div className="text-center">
-                                                    <div className="text-xs text-gray-500">#001</div>
-                                                    <div className="font-medium">Pokemon</div>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex items-center justify-center">
-                                                <div className="flex flex-col items-center">
-                                                    <span className="material-symbols-outlined text-gray-400">
-                                                        arrow_forward
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg transition-colors">
-                                                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-2">
-                                                    <img
-                                                        src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png"
-                                                        alt="Ivysaur"
-                                                        className="w-20 h-20 transform hover:scale-110 transition-transform duration-300"
-                                                    />
-                                                </div>
-                                                <div className="text-center">
-                                                    <div className="text-xs text-gray-500">#002</div>
-                                                    <div className="font-medium">Pokemon</div>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex items-center justify-center">
-                                                <div className="flex flex-col items-center">
-                                                    <span className="material-symbols-outlined text-gray-400">
-                                                        arrow_forward
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg transition-colors">
-                                                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-2">
-                                                    <img
-                                                        src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png"
-                                                        alt="Venusaur"
-                                                        className="w-20 h-20 transform hover:scale-110 transition-transform duration-300"
-                                                    />
-                                                </div>
-                                                <div className="text-center">
-                                                    <div className="text-xs text-gray-500">#003</div>
-                                                    <div className="font-medium">Pokemon</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <EvolutionChain pokemon={pokemon}></EvolutionChain>
                                 </div>
                                 <div className="lg:col-span-2">
                                     <div className="bg-white rounded-lg shadow-sm overflow-hidden p-6">

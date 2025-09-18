@@ -7,6 +7,8 @@ export interface Pokemon {
     description: string
     imageUrl: string
     generationId: number
+    evolutionLines: Array<string>;
+    evolutionStage: number;
     createdAt: Date
     updatedAt: Date
 }
