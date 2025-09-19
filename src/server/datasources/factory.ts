@@ -3,11 +3,16 @@ import type { IDataSourceAdapter } from "./ports";
 import { PrismaDataSource } from "./adapters/prisma/adapter";
 import { PokeApiDataSource } from "./adapters/pokeapi/adapter";
 
+declare global {
+  var __DATA_SOURCE__: IDataSourceAdapter | undefined;
+}
 
-let dataSource: IDataSourceAdapter | null = null;
+
 export function getDataSource(): IDataSourceAdapter {
-  if (!dataSource)
-    dataSource = env.DATA_SOURCE === "prisma" ? new PrismaDataSource() : new PokeApiDataSource();
-  
-  return dataSource;
+  if (!globalThis.__DATA_SOURCE__) {
+    globalThis.__DATA_SOURCE__ = env.DATA_SOURCE === "prisma"
+        ? new PrismaDataSource()
+        : new PokeApiDataSource();
+  }
+  return globalThis.__DATA_SOURCE__;
 }
