@@ -17,7 +17,7 @@ interface PokemonListStore {
 }
 
 
-const initialFilters: FilterState = {
+export const initialFilters: FilterState = {
     type: null,
     generation: null,
     search: "",

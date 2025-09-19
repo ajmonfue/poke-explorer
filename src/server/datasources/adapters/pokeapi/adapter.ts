@@ -30,15 +30,26 @@ export class PokeApiDataSource implements IDataSourceAdapter {
         this._cache.set(key, { data, timestamp: Date.now() })
         return data;
     }
+    private cacheContains(key: string): boolean {
+        return this._cache.has(key);
+    }
 
     private async fetchWithCache<T>(url: string, cacheDuration: number = this.CACHE_DURATION): Promise<T> {
         return await this.cache(url, async () => await this.fetch<T>(url), cacheDuration);
     }
 
     private async fetch<T>(url: string) {
-        const response = await fetch(url);
+        let response;
+        try { 
+            response = await fetch(url);
+        }
+        catch(err) {
+            console.error(`error fetching ${url}`, err);
+            throw err;
+        }
+        
         if (response.status != 200) {
-            throw new Error(`error fetching ${url}`);
+            throw new Error(`error fetching ${url} with response status ${response.status}`);
         }
         return await response.json() as T;
     }
@@ -99,77 +110,72 @@ export class PokeApiDataSource implements IDataSourceAdapter {
         return null;
     }
 
+    private getApiPokemonUrl(pokemonId: number | string) {
+        return `${this.baseUrl}/pokemon/${pokemonId}`;
+    }
+
+    private async getApiPokemon(pokemonUrl: string, typesMap?: Map<string, PokemonType>, generationsMap?: Map<string, Generation>):
+        Promise<PokemonRelations<Pokemon, "generation" | "types">> {
+        typesMap ??= (await this.getPokemonTypes()).reduce((map, item) => map.set(item.handle, item), new Map<string, PokemonType>());
+        generationsMap ??= (await this.getGenerations()).reduce((map, item) => map.set(item.handle, item), new Map<string, Generation>());
+
+        const apiPokemon = await this.fetchWithCache<PokeApiPokemon>(pokemonUrl);
+        const specie = await this.fetchWithCache<PokeApiPokemonSpecie>(apiPokemon.species.url);
+        const evolutionChain = await this.fetchWithCache<PokeApiEvolutionChain>(specie.evolution_chain.url);
+
+        const description = specie.flavor_text_entries.find(entry => entry.language.name == this.language)?.flavor_text ?? '';
+        const lines: Array<string> = []
+        const evolutionStage = this.getEvolutionLines(
+            apiPokemon.name,
+            lines,
+            {
+                evolution: evolutionChain.chain,
+                siblings: 1,
+                stage: 1,
+            },
+        );
+        
+        if (evolutionStage) {
+            lines.push(evolutionChain.chain.species.name);
+            lines.reverse();
+        }
+
+        const pokemonGeneration = generationsMap.get(specie.generation.name)!;
+        return {
+            name: specie.names.find(n => n.language.name == this.language)?.name ?? apiPokemon.name,
+            imageUrl: apiPokemon.sprites.other?.["official-artwork"]?.front_default || apiPokemon.sprites.front_default || this.fallbackPokemonImage,
+            description: description,
+            types: apiPokemon.types
+                .map((t): PokemonType | null => typesMap.get(t.type.name) ?? null)
+                .filter(t => t != null),
+            evolutionLines: lines,
+            evolutionStage: evolutionStage ?? 0,
+            id: apiPokemon.id,
+            generation: pokemonGeneration,
+            height: apiPokemon.height, // decimeters
+            weight: apiPokemon.weight,
+
+            // stats
+            attack: apiPokemon.stats.find(stat => stat.stat.name == PokeApiPokemonStat.ATTACK)?.base_stat ?? null,
+            defense: apiPokemon.stats.find(stat => stat.stat.name == PokeApiPokemonStat.DEFENSE)?.base_stat ?? null,
+            hp: apiPokemon.stats.find(stat => stat.stat.name == PokeApiPokemonStat.HP)?.base_stat ?? null,
+            specialAttack: apiPokemon.stats.find(stat => stat.stat.name == PokeApiPokemonStat.SPECIAL_ATTACK)?.base_stat ?? null,
+            specialDefense: apiPokemon.stats.find(stat => stat.stat.name == PokeApiPokemonStat.SPECIAL_DEFENSE)?.base_stat ?? null,
+            speed: apiPokemon.stats.find(stat => stat.stat.name == PokeApiPokemonStat.SPEED)?.base_stat ?? null,
+        }
+    }
+
     public async getAllPokemons(): Promise<Array<PokemonRelations<Pokemon, "generation" | "types">>> {
-        const typesMap = (await this.getPokemonTypes()).reduce((map, item) => {
-            map.set(item.handle, item);
-            return map;
-        }, new Map<string, PokemonType>());
-
-        const generationsMap = (await this.getGenerations()).reduce((map, item) => {
-            map.set(item.handle, item);
-            return map;
-        }, new Map<string, Generation>());
-
+        const typesMap = (await this.getPokemonTypes()).reduce((map, item) => map.set(item.handle, item), new Map<string, PokemonType>());
+        const generationsMap = (await this.getGenerations()).reduce((map, item) => map.set(item.handle, item), new Map<string, Generation>());
 
         const pokemonListResponse = await this.fetchWithCache<PokeApiApiList<PokeApiPokemonListItem>>(`${this.baseUrl}/pokemon?limit=10000&offset=0`);
         
-        const apiPokemonsData = await Promise.all(
-            pokemonListResponse.results.map(async (pokemonListItem) => {
-                const pokemon = await this.fetchWithCache<PokeApiPokemon>(pokemonListItem.url);
-                const specie = await this.fetchWithCache<PokeApiPokemonSpecie>(pokemon.species.url);
-
-                return {
-                    pokemon,
-                    specie,
-                    evolutionChain: await this.fetchWithCache<PokeApiEvolutionChain>(specie.evolution_chain.url),
-                }
-            })
+        return await Promise.all(
+            pokemonListResponse.results.map((pokemonListItem) => this.getApiPokemon(pokemonListItem.url, typesMap, generationsMap))
         );
-        
-        return apiPokemonsData
-        .map(({pokemon: apiPokemon, specie, evolutionChain}): PokemonRelations<Pokemon, "generation" | "types"> => {
-            const description = specie.flavor_text_entries.find(entry => entry.language.name == this.language)?.flavor_text ?? '';
-            const lines: Array<string> = []
-            const evolutionStage = this.getEvolutionLines(
-                apiPokemon.name,
-                lines,
-                {
-                    evolution: evolutionChain.chain,
-                    siblings: 1,
-                    stage: 1,
-                },
-            );
-            
-            if (evolutionStage) {
-                lines.push(evolutionChain.chain.species.name);
-                lines.reverse();
-            }
-
-            const pokemonGeneration = generationsMap.get(specie.generation.name)!;
-            return {
-                name: specie.names.find(n => n.language.name == this.language)?.name ?? apiPokemon.name,
-                imageUrl: apiPokemon.sprites.other?.["official-artwork"]?.front_default || apiPokemon.sprites.front_default || this.fallbackPokemonImage,
-                description: description,
-                types: apiPokemon.types
-                    .map((t): PokemonType | null => typesMap.get(t.type.name) ?? null)
-                    .filter(t => t != null),
-                evolutionLines: lines,
-                evolutionStage: evolutionStage ?? 0,
-                id: apiPokemon.id,
-                generation: pokemonGeneration,
-                height: apiPokemon.height, // decimeters
-                weight: apiPokemon.weight,
-
-                // stats
-                attack: apiPokemon.stats.find(stat => stat.stat.name == PokeApiPokemonStat.ATTACK)?.base_stat ?? null,
-                defense: apiPokemon.stats.find(stat => stat.stat.name == PokeApiPokemonStat.DEFENSE)?.base_stat ?? null,
-                hp: apiPokemon.stats.find(stat => stat.stat.name == PokeApiPokemonStat.HP)?.base_stat ?? null,
-                specialAttack: apiPokemon.stats.find(stat => stat.stat.name == PokeApiPokemonStat.SPECIAL_ATTACK)?.base_stat ?? null,
-                specialDefense: apiPokemon.stats.find(stat => stat.stat.name == PokeApiPokemonStat.SPECIAL_DEFENSE)?.base_stat ?? null,
-                speed: apiPokemon.stats.find(stat => stat.stat.name == PokeApiPokemonStat.SPEED)?.base_stat ?? null,
-            }
-        });
     }
+
     async findPokemons(filters: PokemonListFilter): Promise<Page<PokemonRelations<Pokemon, "generation" | "types"> & PokemonSearch>> {
         const pokemons = await this.cache(this.pokemonsCachekey, () => this.getAllPokemons(), 0);
         let filteredPokemons = pokemons;
@@ -209,8 +215,13 @@ export class PokeApiDataSource implements IDataSourceAdapter {
         };
     }
     async findPokemon(id: number): Promise<PokemonRelations<Pokemon, "generation" | "types"> | null> {
-        const pokemons = await this.cache(this.pokemonsCachekey, () => this.getAllPokemons(), 0);
-        return pokemons.find(p => p.id == id) ?? null;
+        if (this.cacheContains(this.pokemonsCachekey)) {
+            const pokemons = await this.cache(this.pokemonsCachekey, () => this.getAllPokemons(), 0);
+            return pokemons.find(p => p.id == id) ?? null;
+        }
+        else {
+            return await this.getApiPokemon(this.getApiPokemonUrl(id));
+        }
     }
 
     findGenerations(): Promise<Array<Generation>> {

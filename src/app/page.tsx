@@ -1,11 +1,11 @@
 import { HydrateClient } from "~/trpc/server";
-import { PokemonList } from "./_components/pokemon-list";
+import { PokemonListPage } from "./_components/pokemon-list-page";
 
 export default async function Home() {
 
   return (
     <HydrateClient>
-      <PokemonList></PokemonList>
+      <PokemonListPage></PokemonListPage>
     </HydrateClient>
   );
 }

@@ -5,7 +5,7 @@ import { useDebounce } from "~/hooks/use-debounce";
 import { api } from "~/trpc/react";
 import { PokemonListItem } from "./pokemon-list-item";
 import { Button } from "~/components/ui/button";
-import { usePokemonListStore } from "~/lib/store";
+import { initialFilters, usePokemonListStore } from "~/lib/store";
 import { ITEMS_PER_PAGE } from "~/lib/constants";
 import {
   Select,
@@ -19,8 +19,16 @@ import {
 } from "~/components/ui/select"
 import { Input } from "~/components/ui/input"
 import { LoaderCircle } from "lucide-react";
+import type { Page } from "~/models/pagination";
+import type { Generation } from "~/models/generation";
+import type { Pokemon, PokemonRelations, PokemonSearch } from "~/models/pokemon";
+import type { PokemonType } from "~/models/pokemon-type";
 
-export function PokemonList() {
+export function PokemonList({ initialPokemonsPage, generations, pokemonTypes }: {
+    initialPokemonsPage?: Page<PokemonRelations<Pokemon, 'generation' | 'types'> & PokemonSearch>,
+    generations: Array<Generation>,
+    pokemonTypes: Array<PokemonType>
+}) {
     const { filters, setFilters, setCurrentPage} = usePokemonListStore()
     const debouncedSearch = useDebounce(filters.search, 300);
 
@@ -38,25 +46,13 @@ export function PokemonList() {
             generation: filters.generation || undefined,
         },
         {
+            initialData: initialFilters == filters ? initialPokemonsPage : undefined,
             placeholderData: (prev) => prev,
         }
     );
 
     const totalPages = Math.ceil((pokemonsPage?.count ?? 0) / ITEMS_PER_PAGE);
 
-    const {
-        data: generations,
-        isLoading: generationsIsLoading,
-        isFetching: generationsIsFetching,
-        error: generationsError,
-    } = api.generation.findAll.useQuery();
-
-    const {
-        data: pokemonTypes,
-        isLoading: pokemonTypesIsLoading,
-        isFetching: pokemonTypesIsFetching,
-        error: pokemonTypesError,
-    } = api.pokemonType.findAll.useQuery();
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
             <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -81,8 +77,8 @@ export function PokemonList() {
                                 </div>
                             </div>
                             <div className="flex gap-4">
-                                <Select onValueChange={(value) => setFilters({type: value})} value={filters.type ?? ""} disabled={pokemonTypesIsLoading}>
-                                    <SelectTrigger className="w-[180px] cursor-pointer" loading={pokemonTypesIsLoading}>
+                                <Select onValueChange={(value) => setFilters({type: value})} value={filters.type ?? ""}>
+                                    <SelectTrigger className="w-[180px] cursor-pointer">
                                         <SelectValue placeholder="Select a type" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -107,8 +103,8 @@ export function PokemonList() {
                                     </SelectContent>
                                 </Select>
 
-                                <Select onValueChange={(value) => setFilters({generation: value})} value={filters.generation ?? ""} disabled={generationsIsLoading}>
-                                    <SelectTrigger className="w-[180px] cursor-pointer" loading={generationsIsLoading}>
+                                <Select onValueChange={(value) => setFilters({generation: value})} value={filters.generation ?? ""}>
+                                    <SelectTrigger className="w-[180px] cursor-pointer">
                                         <SelectValue placeholder="Select a generation" />
                                     </SelectTrigger>
                                     <SelectContent>
