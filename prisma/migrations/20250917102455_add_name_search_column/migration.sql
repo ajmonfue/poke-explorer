@@ -2,7 +2,7 @@ CREATE EXTENSION IF NOT EXISTS unaccent;
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 ALTER TABLE pokemons
-    ADD COLUMN IF NOT EXISTS name_search text;
+    ADD COLUMN IF NOT EXISTS name_search text not null DEFAULT '';
 
 -- create trigger function
 CREATE OR REPLACE FUNCTION pokemons_set_name_search()

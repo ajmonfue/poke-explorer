@@ -2,9 +2,20 @@ import type { Pokemon, PokemonRelations, PokemonSearch } from "~/models/pokemon"
 import { PokemonTypeTag } from "./pokemon-type-tag";
 import { cn } from "~/lib/utils";
 import styles from './pokemon-list-item.module.css';
+import { normalizeText } from "~/lib/normalize";
 
 
-export function PokemonListItem({pokemon}: {pokemon: PokemonRelations<Pokemon, 'types' | 'generation'> & PokemonSearch}) {
+export function PokemonListItem({pokemon, search}: {pokemon: PokemonRelations<Pokemon, 'types' | 'generation'> & PokemonSearch, search?: string}) {
+  let matchFound: {startIndex: number, endIndex: number} | null = null;
+  if (search && pokemon.searchMatch == 'contains') {
+    const normalizedSearch = normalizeText(search);
+    const startIndex = pokemon.nameSearch.indexOf(normalizedSearch);
+    matchFound = {
+      startIndex,
+      endIndex: startIndex + normalizedSearch.length
+    }
+  }
+  
   return <div
       className={cn(
         'bg-white p-4 rounded shadow-sm hover:shadow transition-shadow cursor-pointer relative',
@@ -36,7 +47,9 @@ export function PokemonListItem({pokemon}: {pokemon: PokemonRelations<Pokemon, '
             <span className="text-sm text-gray-400">{pokemon.generation.name}</span>
           </div>
           <h2 className="text-lg font-medium">
-            {pokemon.name}
+            { matchFound != null ?
+              (<span>{pokemon.name.substring(0,  matchFound.startIndex)}<span className="text-red-700">{pokemon.name.substring(matchFound.startIndex,  matchFound.endIndex)}</span>{pokemon.name.substring(matchFound.endIndex)}</span>)
+              : pokemon.name}
           </h2>
           <div className="flex gap-2 mt-1">
             { (pokemon.types ?? []).map((pokemonType) => pokemonType &&

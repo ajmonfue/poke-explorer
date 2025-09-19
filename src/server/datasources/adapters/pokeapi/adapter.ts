@@ -141,8 +141,10 @@ export class PokeApiDataSource implements IDataSourceAdapter {
         }
 
         const pokemonGeneration = generationsMap.get(specie.generation.name)!;
+        const pokemonName = specie.names.find(n => n.language.name == this.language)?.name ?? apiPokemon.name;
         return {
-            name: specie.names.find(n => n.language.name == this.language)?.name ?? apiPokemon.name,
+            name: pokemonName,
+            nameSearch: normalizeText(pokemonName),
             imageUrl: apiPokemon.sprites.other?.["official-artwork"]?.front_default || apiPokemon.sprites.front_default || this.fallbackPokemonImage,
             description: description,
             types: apiPokemon.types
@@ -187,11 +189,12 @@ export class PokeApiDataSource implements IDataSourceAdapter {
         if (filters.generation) {
             filteredPokemons = filteredPokemons.filter(p => p.generation.handle == filters.generation);
         }
-        
-        if (filters.name) {
+        const filtersName = filters.name?.trim();
+
+        if (filtersName) {
             const pokemonsMatch = filteredPokemons
                 .filter(pokemon =>
-                    normalizeText(pokemon.name).includes(filters.name!)
+                    pokemon.nameSearch.includes(normalizeText(filtersName))
                 );
 
             const pokemonIds = new Set(pokemonsMatch.map(p => p.id));

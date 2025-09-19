@@ -33,7 +33,7 @@ model Pokemon {
   generationId Int                   @map("generation_id")
   createdAt    DateTime              @default(now()) @map("created_at")
   updatedAt    DateTime              @updatedAt @map("updated_at")
-  nameSearch   String?               @map("name_search")
+  nameSearch   String                @map("name_search") @default("")
   evolutionLines String[] @map("evolution_lines")
   evolutionStage Int @map("evolution_stage")
 

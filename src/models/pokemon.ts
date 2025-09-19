@@ -13,6 +13,7 @@ export interface PokemonStats {
 export interface Pokemon extends PokemonStats {
     id: number
     name: string
+    nameSearch: string
     description: string
     imageUrl: string
     evolutionLines: Array<string>;
