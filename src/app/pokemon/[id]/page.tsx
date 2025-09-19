@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { type Metadata } from "next";
 import { PokemonTypeTag } from "~/app/_components/pokemon-type-tag";
 
 import { api, HydrateClient } from "~/trpc/server";
@@ -12,6 +13,65 @@ interface PokemonPageProps {
   params: Promise<{
     id: number
   }>
+}
+
+export async function generateMetadata({ params }: PokemonPageProps): Promise<Metadata> {
+    const { id: paramId } = await params;
+    const pokemonId = Number(paramId);
+
+    if (isNaN(pokemonId)) {
+        return {
+            title: "Pokémon Not Found",
+            description: "The requested Pokémon could not be found.",
+        };
+    }
+
+    const pokemon = await api.pokemon.findById({ id: pokemonId });
+
+    if (!pokemon) {
+        return {
+            title: "Pokémon Not Found",
+            description: "The requested Pokémon could not be found.",
+        };
+    }
+
+    const pokemonNumber = String(pokemon.id).padStart(3, "0");
+    const pokemonTypes = pokemon.types?.map(type => type?.name).filter(Boolean).join(", ") || "";
+    const description = `Discover ${pokemon.name} (#${pokemonNumber}), a ${pokemonTypes} type Pokémon from ${pokemon.generation.name}. ${pokemon.description}`;
+
+    return {
+        title: `${pokemon.name} (#${pokemonNumber}) - Pokémon Explorer`,
+        description: description,
+        keywords: [
+            "pokemon",
+            pokemon.name.toLowerCase(),
+            pokemonTypes,
+            pokemon.generation.name,
+            "stats",
+            "evolution",
+            "pokedex"
+        ].filter(Boolean),
+        openGraph: {
+            title: `${pokemon.name} (#${pokemonNumber}) - Pokémon Explorer`,
+            description: description,
+            type: "article",
+            url: `/pokemon/${pokemon.id}`,
+            images: [
+                {
+                    url: pokemon.imageUrl,
+                    width: 512,
+                    height: 512,
+                    alt: `${pokemon.name} image`,
+                },
+            ],
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: `${pokemon.name} (#${pokemonNumber}) - Pokémon Explorer`,
+            description: description,
+            images: [pokemon.imageUrl],
+        },
+    };
 }
 
 const pokemonStats: Array<keyof PokemonStats> = [
