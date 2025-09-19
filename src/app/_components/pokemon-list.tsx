@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "~/components/ui/select"
 import { Input } from "~/components/ui/input"
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, SearchIcon, X } from "lucide-react";
 import type { Page } from "~/models/pagination";
 import type { Generation } from "~/models/generation";
 import type { Pokemon, PokemonRelations, PokemonSearch } from "~/models/pokemon";
@@ -64,15 +64,20 @@ export function PokemonList({ initialPokemonsPage, generations, pokemonTypes }: 
                                     <Input
                                         type="text"
                                         placeholder="Search Pokémon by name..."
-                                        className="w-full py-2 pl-10 pr-4 focus:ring-1 focus:ring-primary-500 focus:outline-none"
+                                        className="w-full py-2 pl-9 pr-8 focus:ring-1 focus:ring-primary-500 focus:outline-none"
                                         value={filters.search}
                                         onChange={(e) => setFilters({search: e.target.value})}
                                     />
                                     <span className="absolute left-3 top-0 h-full flex items-center">
-                                        <span className="material-symbols-outlined text-gray-400">
-                                            search
-                                        </span>
+                                        <SearchIcon size={18} className="text-gray-400"></SearchIcon>
                                     </span>
+                                    { filters.search && (
+                                        <div className="absolute right-3 top-0 h-full flex items-center">
+                                            <Button variant="ghost" size="icon" className="size-7" onClick={() => setFilters({search: ''})}>
+                                                <X size={18} className="text-gray-400"></X>
+                                            </Button>
+                                        </div>
+                                    )}
                                     
                                 </div>
                             </div>

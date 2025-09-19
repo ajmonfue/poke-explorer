@@ -6,6 +6,7 @@ import { api, HydrateClient } from "~/trpc/server";
 import { EvolutionChain } from "./_components/evolution-chain";
 import type { PokemonStats } from "~/models/pokemon";
 import { PokemonStat } from "./_components/pokemon-stat";
+import { ArrowLeft, Ruler, Weight } from "lucide-react";
 
 interface PokemonPageProps {
   params: Promise<{
@@ -37,7 +38,7 @@ export default async function Page({ params }: PokemonPageProps) {
                 <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
                     <div className="mb-6 flex items-center">
                         <Link className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 transition-colors" href="/">
-                            <span className="material-symbols-outlined">arrow_back</span>
+                            <ArrowLeft className="text-gray-600"/>
                             <span>Back to list</span>
                         </Link>
                     </div>
@@ -72,7 +73,10 @@ export default async function Page({ params }: PokemonPageProps) {
                                     <div className="flex items-center mt-6 gap-8">
                                         <div className="">
                                             <div className="text-sm text-muted-foreground inline-flex items-center text-gray-500">
-                                                <span className="material-symbols-outlined !text-sm w-[20px]">weight</span>
+                                                <span className="w-[20px]">
+                                                    <Weight size={14}/>
+                                                </span>
+                                                
                                                 Weight
                                             </div>
                                             <div className="font-semibold pl-[20px]">
@@ -81,7 +85,9 @@ export default async function Page({ params }: PokemonPageProps) {
                                         </div>
                                         <div className="">
                                             <div className="text-sm text-muted-foreground inline-flex items-center text-gray-500">
-                                                <span className="material-symbols-outlined !text-sm w-[20px]">height</span>
+                                                <span className="w-[20px]">
+                                                    <Ruler size={14}/>
+                                                </span>
                                                 Height
                                             </div>
                                             <div className="font-semibold pl-[20px]">

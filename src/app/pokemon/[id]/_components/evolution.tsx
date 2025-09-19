@@ -1,3 +1,4 @@
+import { ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { cn } from "~/lib/utils"
 import type { Pokemon, PokemonEvolvable } from "~/models/pokemon"
@@ -9,9 +10,7 @@ export function Evolution({pokemon, isRoot = false, currentPokemon}: {pokemon: P
             {!isRoot && (
                 <div className="flex items-center justify-center">
                     <div className="flex flex-col items-center">
-                        <span className="material-symbols-outlined text-gray-400">
-                            arrow_forward
-                        </span>
+                        <ArrowRight className="text-gray-400" />
                     </div>
                 </div>
             )}
