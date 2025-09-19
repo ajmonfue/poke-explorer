@@ -11,31 +11,17 @@ import { normalizeText } from "~/lib/normalize";
 import type { Page } from "~/models/pagination";
 import type { PokemonListFilter } from "~/models/filters";
 import type { Generation } from "~/models/generation";
+import { DataSourceCache } from "./cache";
 
 export class PokeApiDataSource implements IDataSourceAdapter {
     private readonly baseUrl = 'https://pokeapi.co/api/v2';
     private readonly language = 'en';
     private readonly fallbackPokemonImage = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png';
     private readonly pokemonsCachekey = 'pokemons';
-    private _cache = new Map<string, { data: any; timestamp: number }>()
-    private readonly CACHE_DURATION = 5 * 60 * 1000;
+    private readonly cache = new DataSourceCache();
 
-    private async cache<T>(key: string, callback: () => Promise<T>, cacheDuration: number = this.CACHE_DURATION): Promise<T> {
-        const cached = this._cache.get(key);
-        if (cached && (cacheDuration == 0 || (Date.now() - cached.timestamp) < cacheDuration)) {
-            return cached.data
-        }
-
-        const data = await callback();
-        this._cache.set(key, { data, timestamp: Date.now() })
-        return data;
-    }
-    private cacheContains(key: string): boolean {
-        return this._cache.has(key);
-    }
-
-    private async fetchWithCache<T>(url: string, cacheDuration: number = this.CACHE_DURATION): Promise<T> {
-        return await this.cache(url, async () => await this.fetch<T>(url), cacheDuration);
+    private async fetchWithCache<T>(url: string, cacheDuration: number = DataSourceCache.CACHE_DURATION): Promise<T> {
+        return await this.cache.get(url, async () => await this.fetch<T>(url), cacheDuration);
     }
 
     private async fetch<T>(url: string) {
@@ -168,7 +154,7 @@ export class PokeApiDataSource implements IDataSourceAdapter {
     }
 
     public async getAllPokemons() {
-        return await this.cache(
+        return await this.cache.get(
             this.pokemonsCachekey,
             () => this.getPagePokemons({
                     limit:10000,
@@ -243,7 +229,7 @@ export class PokeApiDataSource implements IDataSourceAdapter {
     }
     
     public  async findPokemon(id: number): Promise<PokemonRelations<Pokemon, "generation" | "types"> | null> {
-        if (this.cacheContains(this.pokemonsCachekey)) {
+        if (this.cache.contains(this.pokemonsCachekey)) {
             const pokemons = await this.getAllPokemons();
             return pokemons.find(p => p.id == id) ?? null;
         }
