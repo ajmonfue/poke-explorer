@@ -134,20 +134,24 @@ export function PokemonList({ initialPokemonsPage, generations, pokemonTypes }: 
                 </div>
 
                 <div className="relative min-h-20">
-                    {isFetching ?
-                        (
-                            <div className="absolute left-0 top-0 w-full h-full bg-background/60 z-1 flex items-center justify-center">
-                                <LoaderCircle className="w-12 h-12 animate-spin text-muted-foreground" />
-                            </div>
-                        ) :
-                        (pokemonsPage?.data || []).length > 0 ?
+                    {
+                        isFetching &&
+                        <div className="absolute left-0 top-0 w-full h-full bg-background/60 z-1 flex items-center justify-center">
+                            <LoaderCircle className="w-12 h-12 animate-spin text-muted-foreground" />
+                        </div>
+                    }
+                    {
+                        (pokemonsPage?.data || []).length > 0  &&
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {pokemonsPage?.data.map((pokemon) => (
                                 <Link key={pokemon.id} href={`/pokemon/${pokemon.id}`}>
                                     <PokemonListItem key={pokemon.id} pokemon={pokemon} search={filters.search}></PokemonListItem>
                                 </Link>
                             ))}
-                        </div> :
+                        </div> 
+                    }
+                    {
+                        !isFetching && ((pokemonsPage?.data || [])).length == 0 &&
                         <div className="text-center">
                             Pokemons not found
                         </div>

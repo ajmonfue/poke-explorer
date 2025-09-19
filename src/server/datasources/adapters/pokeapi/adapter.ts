@@ -55,7 +55,7 @@ export class PokeApiDataSource implements IDataSourceAdapter {
     }
 
     async findEvolutions(evolutionLines: Array<string>): Promise<Array<Pokemon>> {
-        const pokemons = await this.cache(this.pokemonsCachekey, () => this.getAllPokemons(), 0);
+        const pokemons = await this.getAllPokemons();
         const filteredPokemons = pokemons
         .filter(pokemon => {
             return pokemon.evolutionLines.some(line => evolutionLines.includes(line))
@@ -167,34 +167,57 @@ export class PokeApiDataSource implements IDataSourceAdapter {
         }
     }
 
-    public async getAllPokemons(): Promise<Array<PokemonRelations<Pokemon, "generation" | "types">>> {
-        const typesMap = (await this.getPokemonTypes()).reduce((map, item) => map.set(item.handle, item), new Map<string, PokemonType>());
-        const generationsMap = (await this.getGenerations()).reduce((map, item) => map.set(item.handle, item), new Map<string, Generation>());
-
-        const pokemonListResponse = await this.fetchWithCache<PokeApiApiList<PokeApiPokemonListItem>>(`${this.baseUrl}/pokemon?limit=10000&offset=0`);
-        
-        return await Promise.all(
-            pokemonListResponse.results.map((pokemonListItem) => this.getApiPokemon(pokemonListItem.url, typesMap, generationsMap))
+    public async getAllPokemons() {
+        return await this.cache(
+            this.pokemonsCachekey,
+            () => this.getPagePokemons({
+                    limit:10000,
+                    offset: 0
+                })
+                .then(r => r.data),
+            0,
         );
     }
 
-    async findPokemons(filters: PokemonListFilter): Promise<Page<PokemonRelations<Pokemon, "generation" | "types"> & PokemonSearch>> {
-        const pokemons = await this.cache(this.pokemonsCachekey, () => this.getAllPokemons(), 0);
-        let filteredPokemons = pokemons;
+    public async getPagePokemons({limit, offset}: {limit: number, offset: number}): Promise<{count: number, data: Array<PokemonRelations<Pokemon, "generation" | "types">>}> {
+        const typesMap = (await this.getPokemonTypes()).reduce((map, item) => map.set(item.handle, item), new Map<string, PokemonType>());
+        const generationsMap = (await this.getGenerations()).reduce((map, item) => map.set(item.handle, item), new Map<string, Generation>());
+
+        const pokemonListResponse = await this.fetchWithCache<PokeApiApiList<PokeApiPokemonListItem>>(`${this.baseUrl}/pokemon?limit=${limit}&offset=${offset}`);
         
+        return {
+            count: pokemonListResponse.count,
+            data: await Promise.all(
+                pokemonListResponse.results.map((pokemonListItem) => this.getApiPokemon(pokemonListItem.url, typesMap, generationsMap))
+            )
+        };
+    }
+
+    public async findPokemons(filters: PokemonListFilter): Promise<Page<PokemonRelations<Pokemon, "generation" | "types"> & PokemonSearch>> {
+        const filterName = filters.name?.trim();
+        let shouldFilter = filterName || filters.type || filters.generation;
+
+        if (!shouldFilter) {
+            const pagePokemons = await this.getPagePokemons(filters);
+            return {
+                count: pagePokemons.count,
+                currentPage: Math.floor(filters.offset / filters.limit) + 1,
+                data: pagePokemons.data,
+                isLast: (pagePokemons.data.length + filters.offset) >= pagePokemons.count,
+            };
+        }
+
+        let filteredPokemons = await this.getAllPokemons();
         if (filters.type) {
             filteredPokemons = filteredPokemons.filter(p => p.types.some(type => type.handle == filters.type));
         }
-
         if (filters.generation) {
             filteredPokemons = filteredPokemons.filter(p => p.generation.handle == filters.generation);
         }
-        const filtersName = filters.name?.trim();
-
-        if (filtersName) {
+        if (filterName) {
             const pokemonsMatch = filteredPokemons
                 .filter(pokemon =>
-                    pokemon.nameSearch.includes(normalizeText(filtersName))
+                    pokemon.nameSearch.includes(normalizeText(filterName))
                 );
 
             const pokemonIds = new Set(pokemonsMatch.map(p => p.id));
@@ -210,16 +233,18 @@ export class PokeApiDataSource implements IDataSourceAdapter {
                 }));
         }
 
+        const pageData = filteredPokemons.slice(filters.offset, filters.offset + filters.limit);
         return {
             count: filteredPokemons.length,
             currentPage: Math.floor(filters.offset / filters.limit) + 1,
-            data: filteredPokemons.slice(filters.offset, filters.offset + filters.limit),
-            isLast: (filteredPokemons.length + filters.offset) >= filters.limit,
+            data: pageData,
+            isLast: (pageData.length + filters.offset) >= filteredPokemons.length,
         };
     }
-    async findPokemon(id: number): Promise<PokemonRelations<Pokemon, "generation" | "types"> | null> {
+    
+    public  async findPokemon(id: number): Promise<PokemonRelations<Pokemon, "generation" | "types"> | null> {
         if (this.cacheContains(this.pokemonsCachekey)) {
-            const pokemons = await this.cache(this.pokemonsCachekey, () => this.getAllPokemons(), 0);
+            const pokemons = await this.getAllPokemons();
             return pokemons.find(p => p.id == id) ?? null;
         }
         else {
@@ -227,11 +252,11 @@ export class PokeApiDataSource implements IDataSourceAdapter {
         }
     }
 
-    findGenerations(): Promise<Array<Generation>> {
+    public  findGenerations(): Promise<Array<Generation>> {
         return this.getGenerations()
     }
 
-    findPokemonTypes(): Promise<Array<PokemonType>> {
+    public  findPokemonTypes(): Promise<Array<PokemonType>> {
         return this.getPokemonTypes();
     }
 }
