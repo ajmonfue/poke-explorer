@@ -7,12 +7,22 @@ export const env = createEnv({
    * isn't built with invalid env vars.
    */
   server: {
-    DATA_SOURCE: z.enum(["prisma", "pokeapi"]).default("prisma"),
-    DATABASE_URL: z.string().url(), // TODO: make optional
+    DATA_SOURCE: z.enum(["prisma", "pokeapi"]).default("pokeapi"),
+    DATABASE_URL: z.string().url().optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
   },
+  createFinalSchema: (shape) =>
+    z.object(shape).superRefine((env, ctx) => {
+      if (env.DATA_SOURCE === "prisma" && !env.DATABASE_URL) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["DATABASE_URL"],
+          message: "DATABASE_URL is required when DATA_SOURCE = 'prisma'",
+        });
+      }
+    }),
 
   /**
    * Specify your client-side environment variables schema here. This way you can ensure the app
