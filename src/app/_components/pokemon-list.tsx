@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { LinkTransition } from "~/components/link-transition";
 import { useDebounce } from "~/hooks/use-debounce";
 import { api } from "~/trpc/react";
 import { PokemonListItem } from "./pokemon-list-item";
@@ -149,9 +149,9 @@ export function PokemonList({ initialPokemonsPage, generations, pokemonTypes }: 
                         (pokemonsPage?.data || []).length > 0  &&
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {pokemonsPage?.data.map((pokemon) => (
-                                <Link key={pokemon.id} href={`/pokemon/${pokemon.id}`}>
-                                    <PokemonListItem key={pokemon.id} pokemon={pokemon} search={filters.search}></PokemonListItem>
-                                </Link>
+                                <LinkTransition key={pokemon.id} href={`/pokemon/${pokemon.id}`}>
+                                    <PokemonListItem pokemon={pokemon} search={filters.search}></PokemonListItem>
+                                </LinkTransition>
                             ))}
                         </div> 
                     }

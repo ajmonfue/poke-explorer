@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LinkTransition } from "~/components/link-transition";
 import { notFound } from "next/navigation";
 import { type Metadata } from "next";
 import { PokemonTypeTag } from "~/app/_components/pokemon-type-tag";
@@ -97,10 +97,10 @@ export default async function Page({ params }: PokemonPageProps) {
             <div className="min-h-screen bg-gray-50 flex flex-col">
                 <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
                     <div className="mb-6 flex items-center">
-                        <Link className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 transition-colors" href="/">
+                        <LinkTransition className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 transition-colors" href="/">
                             <ArrowLeft className="text-gray-600"/>
                             <span>Back to list</span>
-                        </Link>
+                        </LinkTransition>
                     </div>
 
                     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
