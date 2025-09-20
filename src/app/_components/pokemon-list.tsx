@@ -81,9 +81,9 @@ export function PokemonList({ initialPokemonsPage, generations, pokemonTypes }: 
                                     
                                 </div>
                             </div>
-                            <div className="flex gap-4">
+                            <div className="flex gap-4 flex-wrap">
                                 <Select onValueChange={(value) => setFilters({type: value})} value={filters.type ?? ""}>
-                                    <SelectTrigger className="w-[180px] cursor-pointer">
+                                    <SelectTrigger className="min-w-[180px] cursor-pointer flex-1">
                                         <SelectValue placeholder="Select a type" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -109,7 +109,7 @@ export function PokemonList({ initialPokemonsPage, generations, pokemonTypes }: 
                                 </Select>
 
                                 <Select onValueChange={(value) => setFilters({generation: value})} value={filters.generation ?? ""}>
-                                    <SelectTrigger className="w-[180px] cursor-pointer">
+                                    <SelectTrigger className="min-w-[180px] cursor-pointer flex-1">
                                         <SelectValue placeholder="Select a generation" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -172,8 +172,24 @@ export function PokemonList({ initialPokemonsPage, generations, pokemonTypes }: 
                         >
                             Previous
                         </Button>
+                        <div className="block md:hidden">
+                            <Select onValueChange={(value) => setCurrentPage(Number(value))} value={String(filters.currentPage)}>
+                                <SelectTrigger className="w-[100px] cursor-pointer">
+                                    <SelectValue placeholder="Select a page" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        {
+                                            Array.from({ length: totalPages }, (_, i) => (
+                                                <SelectItem key={i} value={String(i + 1)}>{i + 1}</SelectItem>
+                                            ))
+                                        }
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                        </div>
 
-                        <div className="flex items-center gap-1">
+                        <div className="hidden md:flex items-center gap-1">
                             {totalPages > 5 && filters.currentPage > 3 && (
                                 <>
                                     <Button variant="outline" size="sm" onClick={() => setCurrentPage(1)}>

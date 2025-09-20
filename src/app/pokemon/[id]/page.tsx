@@ -105,7 +105,7 @@ export default async function Page({ params }: PokemonPageProps) {
 
                     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                         <div className="grid grid-cols-1 lg:grid-cols-2">
-                            <div className="flex flex-col sm:flex-row px-6 py-8">
+                            <div className="flex flex-col sm:flex-row px-6 py-8 items-center">
                                 <div className="w-40 h-40 sm:w-48 sm:h-48 flex items-center justify-center mb-4 sm:mb-0 sm:mr-6">
                                     <img
                                         src={pokemon.imageUrl}
@@ -113,7 +113,7 @@ export default async function Page({ params }: PokemonPageProps) {
                                         className="w-full h-full object-contain transform hover:scale-110 transition-transform duration-300"
                                     />
                                 </div>
-                                <div className="flex-1">
+                                <div className="flex-1 w-full">
                                     <div className="flex items-center">
                                         <span className="text-gray-500">#{String(pokemon.id).padStart(3, "0")}</span>
                                         <span className="w-[1px] round bg-gray-100 mx-3 h-4 inline-block"></span>

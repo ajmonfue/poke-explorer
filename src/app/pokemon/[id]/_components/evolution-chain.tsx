@@ -13,10 +13,12 @@ export async function EvolutionChain({pokemon: currentPokemon}: {pokemon: Pokemo
     return (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden p-6">
             <h2 className="text-xl font-semibold mb-4">Evolution Chain</h2>
-            <div className="flex flex-col md:flex-row md:flex-wrap items-center justify-center gap-2 md:gap-4">
-                {roots.map(root => (
-                    <Evolution key={root.id} pokemon={root} isRoot currentPokemon={currentPokemon}></Evolution>
-                ))}
+            <div className="text-center">
+                <div className="inline-block max-w-full overflow-x-auto">
+                    {roots.map(root => (
+                        <Evolution key={root.id} pokemon={root} isRoot currentPokemon={currentPokemon}></Evolution>
+                    ))}
+                </div>
             </div>
         </div>
     )
