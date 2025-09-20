@@ -1,29 +1,89 @@
-# Create T3 App
+# Pokémon Explorer
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+A web application for exploring Pokémon data with support for multiple data sources.
 
-## What's next? How do I make an app with this?
+## Features
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+- Browse Pokémon by name, type and generation.
+- View detailed Pokémon information including stats, types, and evolutions.
+- Support for multiple data sources (local database or PokéAPI).
+- Responsive design for desktop and mobile devices.
+- Type-safe development with TypeScript.
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## Prerequisites
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+- Node.js (see `.nvmrc` for the exact version)
+- Docker (optional, for local database)
 
-## Learn More
+## Installation
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+Install the dependencies:
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+```bash
+npm install
+```
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+## Configuration
 
-## How do I deploy this?
+The project supports two data sources. You must specify which one to use in your `.env` file.
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+### Option 1: PostgreSQL Database (Prisma)
+
+For better performance and offline capability, you can use a local PostgreSQL database.
+
+1. Start the PostgreSQL database using Docker:
+   ```bash
+   docker compose -f etc/docker/compose.yml up -d
+   ```
+
+2. Create a `.env` file in the project root:
+   ```env
+   DATABASE_URL="postgresql://postgres:postgres@localhost:25442/poke_app"
+   DATA_SOURCE="prisma"
+   ```
+
+3. Apply database migrations:
+   ```bash
+   npm run db:migrate
+   ```
+
+4. Seed the database with Pokémon data:
+   ```bash
+   npx prisma db seed
+   ```
+
+### Option 2: PokéAPI (External API)
+
+For a lighter setup that doesn't require a local database:
+
+Create a `.env` file in the project root:
+```env
+DATA_SOURCE="pokeapi"
+```
+
+## Development
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+The application will be available at `http://localhost:3000`.
+
+## Testing
+
+Run the test suite:
+
+```bash
+npm test
+```
+
+## Technologies Used
+
+- **Framework**: Next.js (T3 Stack)
+- **Language**: TypeScript
+- **Database**: PostgreSQL with Prisma ORM
+- **Styling**: CSS Modules / Tailwind CSS
+- **Testing**: Jest
+- **External API**: PokéAPI
