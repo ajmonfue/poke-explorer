@@ -43,7 +43,7 @@ export class PokeApiDataSource implements IDataSourceAdapter {
     async findPokemonEvolutions(id: number): Promise<Array<Pokemon>> {
         if (this.cache.contains(this.pokemonsCachekey)) {
             const pokemons = await this.getAllPokemons();
-            const pokemon = pokemons.find(p => p.id);
+            const pokemon = pokemons.find(p => p.id == id);
             if (pokemon == null) {
                 throw new Error(`pokemon not found with id ${id}`);
             }
