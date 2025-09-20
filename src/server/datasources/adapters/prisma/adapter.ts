@@ -11,10 +11,21 @@ import type { PokemonType } from "~/models/pokemon-type";
 export class PrismaDataSource implements IDataSourceAdapter {
     private readonly db = dbClient;
 
-    async findEvolutions(evolutionLines: Array<string>): Promise<Array<Pokemon>> {
+    async findPokemonEvolutions(id: number): Promise<Array<Pokemon>> {
+        const res = await this.db.pokemon.findUnique({
+            where: {
+                id,
+            },
+            select: {
+                evolutionLines: true
+            }
+        });
+        if (res == null) {
+            throw new Error(`pokemon not found with id ${id}`);
+        }
         return await this.db.pokemon.findMany({
             where: {
-                evolutionLines: { hasSome: evolutionLines },
+                evolutionLines: { hasSome: res.evolutionLines },
             },
             orderBy: {
                 evolutionStage: 'asc'

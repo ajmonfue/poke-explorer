@@ -4,10 +4,10 @@ import type { Pokemon, PokemonRelations, PokemonSearch } from "~/models/pokemon"
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 const router = createTRPCRouter({
-  findEvolutions: publicProcedure
-    .input(z.object({ evolutionLines: z.string().array() }))
+  findPokemonEvolutions: publicProcedure
+    .input(z.object({ id: z.number() }))
     .query<Array<Pokemon>>(async ({ ctx, input }) => {
-      return await ctx.datasource.findEvolutions(input.evolutionLines);
+      return await ctx.datasource.findPokemonEvolutions(input.id);
     }),
 
   findAll: publicProcedure

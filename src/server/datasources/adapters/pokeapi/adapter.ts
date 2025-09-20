@@ -40,15 +40,31 @@ export class PokeApiDataSource implements IDataSourceAdapter {
         return await response.json() as T;
     }
 
-    async findEvolutions(evolutionLines: Array<string>): Promise<Array<Pokemon>> {
-        const pokemons = await this.getAllPokemons();
-        const filteredPokemons = pokemons
-        .filter(pokemon => {
-            return pokemon.evolutionLines.some(line => evolutionLines.includes(line))
-        });
+    async findPokemonEvolutions(id: number): Promise<Array<Pokemon>> {
+        if (this.cache.contains(this.pokemonsCachekey)) {
+            const pokemons = await this.getAllPokemons();
+            const pokemon = pokemons.find(p => p.id);
+            if (pokemon == null) {
+                throw new Error(`pokemon not found with id ${id}`);
+            }
+            const filteredPokemons = pokemons
+                .filter(p => p.evolutionLines.some(line => pokemon.evolutionLines.includes(line)));
+            filteredPokemons.sort((a, b) => a.evolutionStage - b.evolutionStage);
+            return filteredPokemons;
+        }
 
-        filteredPokemons.sort((a, b) => a.evolutionStage - b.evolutionStage);
-        return filteredPokemons;
+        const apiPokemon = await this.fetchWithCache<PokeApiPokemon>(this.getApiPokemonUrl(id));
+        const specie = await this.fetchWithCache<PokeApiPokemonSpecie>(apiPokemon.species.url);
+        const evolutionChain = await this.fetchWithCache<PokeApiEvolutionChain>(specie.evolution_chain.url);
+    
+        // get pokemos in chain
+        let pokemonNames: Set<string> = new Set();
+        (function addPokemonNames(chainEvolution: PokeApiEvolution) {
+            pokemonNames.add(chainEvolution.species.name);
+            chainEvolution.evolves_to.forEach(addPokemonNames);
+        })(evolutionChain.chain);
+
+        return await Promise.all(Array.from(pokemonNames).map(pokemonName => this.getApiPokemon(this.getApiPokemonUrl(pokemonName))));
     }
 
     private async getPokemonTypes(): Promise<Array<PokemonType>> {

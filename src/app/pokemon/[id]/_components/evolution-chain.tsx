@@ -6,9 +6,9 @@ import { getPokemonEvolutionTree } from "~/lib/utils";
 
 export async function EvolutionChain({pokemon: currentPokemon}: {pokemon: Pokemon}) {
     const roots: Array<PokemonEvolvable> = getPokemonEvolutionTree(await api.pokemon
-    .findEvolutions({
-        evolutionLines: currentPokemon.evolutionLines,
-    }));
+        .findPokemonEvolutions({
+            id: currentPokemon.id,
+        }));
     
     return (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden p-6">
