@@ -1,7 +1,6 @@
 import type { PokeApiLanguage, PokeApiListItem } from "./api";
 
-export interface PokeApiGenerationListItem extends PokeApiListItem {
-}
+export type PokeApiGenerationListItem = PokeApiListItem;
 export interface PokeApiGeneration {
     id: number;
     name: string;

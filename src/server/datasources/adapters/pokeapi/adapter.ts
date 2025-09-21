@@ -58,7 +58,7 @@ export class PokeApiDataSource implements IDataSourceAdapter {
         const evolutionChain = await this.fetchWithCache<PokeApiEvolutionChain>(specie.evolution_chain.url);
     
         // get pokemos in chain
-        let pokemonNames: Set<string> = new Set();
+        const pokemonNames = new Set<string>();
         (function addPokemonNames(chainEvolution: PokeApiEvolution) {
             pokemonNames.add(chainEvolution.species.name);
             chainEvolution.evolves_to.forEach(addPokemonNames);
@@ -93,7 +93,7 @@ export class PokeApiDataSource implements IDataSourceAdapter {
             if (siblings > 1) lines.push(evolution.species.name);
             return stage;
         }
-        for (let evolvesTo of node.evolution.evolves_to) {
+        for (const evolvesTo of node.evolution.evolves_to) {
             const stageFound = this.getEvolutionLines(
                 pokemonToFound,
                 lines,
@@ -147,7 +147,7 @@ export class PokeApiDataSource implements IDataSourceAdapter {
         return {
             name: pokemonName,
             nameSearch: normalizeText(pokemonName),
-            imageUrl: apiPokemon.sprites.other?.["official-artwork"]?.front_default || apiPokemon.sprites.front_default || this.fallbackPokemonImage,
+            imageUrl: apiPokemon.sprites.other?.["official-artwork"]?.front_default ?? apiPokemon.sprites.front_default ?? this.fallbackPokemonImage,
             description: description,
             types: apiPokemon.types
                 .map((t): PokemonType | null => typesMap.get(t.type.name) ?? null)
@@ -197,7 +197,7 @@ export class PokeApiDataSource implements IDataSourceAdapter {
 
     public async findPokemons(filters: PokemonListFilter): Promise<Page<PokemonRelations<Pokemon, "generation" | "types"> & PokemonSearch>> {
         const filterName = filters.name?.trim();
-        let shouldFilter = filterName || filters.type || filters.generation;
+        const shouldFilter = filterName ?? filters.type ?? filters.generation;
 
         if (!shouldFilter) {
             const pagePokemons = await this.getPagePokemons(filters);

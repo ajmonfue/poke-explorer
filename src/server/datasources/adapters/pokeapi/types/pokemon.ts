@@ -1,9 +1,7 @@
-import type { PokeApiLanguage, PokeApiListItem } from "./api";
-import type { PokeApiGenerationListItem } from "./generation";
+import type { PokeApiListItem } from "./api";
 import type { PokeApiSpecieSimple } from "./specie";
 
-export interface PokeApiPokemonListItem extends PokeApiListItem {
-}
+export type PokeApiPokemonListItem = PokeApiListItem;
 
 export enum PokeApiPokemonStat {
   HP = "hp",

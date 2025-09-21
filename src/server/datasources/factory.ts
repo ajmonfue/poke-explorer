@@ -9,10 +9,8 @@ declare global {
 
 
 export function getDataSource(): IDataSourceAdapter {
-  if (!globalThis.__DATA_SOURCE__) {
-    globalThis.__DATA_SOURCE__ = env.DATA_SOURCE === "prisma"
-        ? new PrismaDataSource()
-        : new PokeApiDataSource();
-  }
+  globalThis.__DATA_SOURCE__ ??= env.DATA_SOURCE === "prisma"
+    ? new PrismaDataSource()
+    : new PokeApiDataSource();
   return globalThis.__DATA_SOURCE__;
 }

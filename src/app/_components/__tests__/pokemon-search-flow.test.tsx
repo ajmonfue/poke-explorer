@@ -1,7 +1,6 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { PokemonList } from '../pokemon-list'
-import { usePokemonListStore } from '~/lib/store'
 import { api } from '~/trpc/react'
 import * as store from '~/lib/store'
 
@@ -26,7 +25,7 @@ jest.mock('~/lib/store', () => ({
 }))
 
 jest.mock('~/hooks/use-debounce', () => ({
-  useDebounce: jest.fn((value) => value)
+  useDebounce: jest.fn((value: unknown) => value)
 }))
 
 const mockGenerations = [

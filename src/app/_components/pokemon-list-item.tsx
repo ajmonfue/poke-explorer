@@ -3,6 +3,7 @@ import { PokemonTypeTag } from "./pokemon-type-tag";
 import { cn } from "~/lib/utils";
 import styles from './pokemon-list-item.module.css';
 import { normalizeText } from "~/lib/normalize";
+import Image from "next/image";
 
 
 export function PokemonListItem({pokemon, search}: {pokemon: PokemonRelations<Pokemon, 'types' | 'generation'> & PokemonSearch, search?: string}) {
@@ -34,11 +35,14 @@ export function PokemonListItem({pokemon, search}: {pokemon: PokemonRelations<Po
       }
       <div className="flex items-center gap-4">
         <div className="w-20 h-20 bg-gray-100 rounded flex items-center justify-center">
-          <img
-            src={pokemon.imageUrl}
-            alt={pokemon.name}
-            className="w-16 h-16"
-          />
+          <div className="relative w-16 h-16">
+            <Image
+              src={pokemon.imageUrl}
+              alt={pokemon.name}
+              fill
+              className="object-contain"
+            />
+          </div>
         </div>
         <div>
           <div className="flex items-center">

@@ -8,6 +8,7 @@ import { EvolutionChain } from "./_components/evolution-chain";
 import type { PokemonStats } from "~/models/pokemon";
 import { PokemonStat } from "./_components/pokemon-stat";
 import { ArrowLeft, Ruler, Weight } from "lucide-react";
+import Image from "next/image";
 
 interface PokemonPageProps {
   params: Promise<{
@@ -107,11 +108,14 @@ export default async function Page({ params }: PokemonPageProps) {
                         <div className="grid grid-cols-1 lg:grid-cols-2">
                             <div className="flex flex-col sm:flex-row px-6 py-8 items-center">
                                 <div className="w-40 h-40 sm:w-48 sm:h-48 flex items-center justify-center mb-4 sm:mb-0 sm:mr-6">
-                                    <img
-                                        src={pokemon.imageUrl}
-                                        alt={`${pokemon.name} image`}
-                                        className="w-full h-full object-contain transform hover:scale-110 transition-transform duration-300"
-                                    />
+                                    <div className="relative w-full h-full transform hover:scale-110 transition-transform duration-300">
+                                        <Image
+                                            src={pokemon.imageUrl}
+                                            alt={pokemon.name}
+                                            fill
+                                            className="object-contain"
+                                        />
+                                    </div>
                                 </div>
                                 <div className="flex-1 w-full">
                                     <div className="flex items-center">

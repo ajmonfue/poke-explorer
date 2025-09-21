@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react"
+import Image from "next/image"
 import { LinkTransition } from "~/components/link-transition"
 import { cn } from "~/lib/utils"
 import type { Pokemon, PokemonEvolvable } from "~/models/pokemon"
@@ -18,11 +19,14 @@ export function Evolution({pokemon, isRoot = false, currentPokemon}: {pokemon: P
             <LinkTransition href={`/pokemon/${pokemon.id}`}>
                 <div className={cn('flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg transition-colors self-start border', pokemon.id == currentPokemon.id ? 'border-black' : 'border-transparent')}>
                     <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-2">
-                        <img
-                            src={pokemon.imageUrl}
-                            alt={pokemon.name}
-                            className="w-20 h-20 transform hover:scale-110 transition-transform duration-300"
-                        />
+                        <div className="relative w-20 h-20 transform hover:scale-110 transition-transform duration-300">
+                            <Image
+                                src={pokemon.imageUrl}
+                                alt={pokemon.name}
+                                fill
+                                className="object-contain"
+                            />
+                        </div>
                     </div>
                     <div className="text-center">
                         <div className="text-xs text-gray-500">#{String(pokemon.id).padStart(3, "0")}</div>

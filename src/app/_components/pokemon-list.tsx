@@ -34,9 +34,7 @@ export function PokemonList({ initialPokemonsPage, generations, pokemonTypes }: 
 
     const {
         data: pokemonsPage,
-        isLoading,
         isFetching,
-        error,
     } = api.pokemon.findAll.useQuery(
         {
             name: debouncedSearch || undefined,
@@ -146,7 +144,7 @@ export function PokemonList({ initialPokemonsPage, generations, pokemonTypes }: 
                         </div>
                     }
                     {
-                        (pokemonsPage?.data || []).length > 0  &&
+                        (pokemonsPage?.data ?? []).length > 0  &&
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {pokemonsPage?.data.map((pokemon) => (
                                 <LinkTransition key={pokemon.id} href={`/pokemon/${pokemon.id}`}>
@@ -156,7 +154,7 @@ export function PokemonList({ initialPokemonsPage, generations, pokemonTypes }: 
                         </div> 
                     }
                     {
-                        !isFetching && ((pokemonsPage?.data || [])).length == 0 &&
+                        !isFetching && ((pokemonsPage?.data ?? [])).length == 0 &&
                         <div className="text-center">
                             Pokemons not found
                         </div>

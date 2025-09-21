@@ -7,7 +7,7 @@ interface LinkTransitionProps {
   href: string;
   children: React.ReactNode;
   className?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export function LinkTransition({ href, children, className, ...props }: LinkTransitionProps) {

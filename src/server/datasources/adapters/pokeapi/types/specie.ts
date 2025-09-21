@@ -1,6 +1,6 @@
 import type { PokeApiLanguage, PokeApiListItem } from "./api";
 import type { PokeApiGenerationListItem } from "./generation";
-export interface PokeApiSpecieSimple extends PokeApiListItem {}
+export type PokeApiSpecieSimple = PokeApiListItem;
 export interface PokeApiPokemonSpecie {
     evolution_chain: {
         url: string;

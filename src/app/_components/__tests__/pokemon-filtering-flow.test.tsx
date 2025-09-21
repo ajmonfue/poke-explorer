@@ -25,7 +25,7 @@ jest.mock('~/lib/store', () => ({
 }))
 
 jest.mock('~/hooks/use-debounce', () => ({
-  useDebounce: jest.fn((value) => value)
+  useDebounce: jest.fn((value: unknown) => value)
 }))
 
 const mockGenerations = [
