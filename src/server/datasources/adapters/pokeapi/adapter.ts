@@ -125,7 +125,9 @@ export class PokeApiDataSource implements IDataSourceAdapter {
         const specie = await this.fetchWithCache<PokeApiPokemonSpecie>(apiPokemon.species.url);
         const evolutionChain = await this.fetchWithCache<PokeApiEvolutionChain>(specie.evolution_chain.url);
 
-        const description = specie.flavor_text_entries.find(entry => entry.language.name == this.language)?.flavor_text ?? '';
+        const description = specie.flavor_text_entries
+            .find(entry => entry.language.name == this.language)?.flavor_text
+            .replace(/[\n\f\r\t]/g, '') ?? '';
         const lines: Array<string> = []
         const evolutionStage = this.getEvolutionLines(
             apiPokemon.name,
