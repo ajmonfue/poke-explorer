@@ -4,6 +4,7 @@ import { type Metadata } from "next";
 import { PokemonTypeTag } from "~/app/_components/pokemon-type-tag";
 
 import { api, HydrateClient } from "~/trpc/server";
+import { getDataSource } from "~/server/datasources/factory";
 import { EvolutionChain } from "./_components/evolution-chain";
 import type { PokemonStats } from "~/models/pokemon";
 import { PokemonStat } from "./_components/pokemon-stat";
@@ -14,6 +15,18 @@ interface PokemonPageProps {
   params: Promise<{
     id: number
   }>
+}
+
+export async function generateStaticParams() {
+    const datasource = getDataSource();
+    const allPokemon = await datasource.findPokemons({
+        limit: 2000,
+        offset: 0
+    });
+
+    return allPokemon.data.map((pokemon) => ({
+        id: pokemon.id.toString(),
+    }));
 }
 
 export async function generateMetadata({ params }: PokemonPageProps): Promise<Metadata> {
