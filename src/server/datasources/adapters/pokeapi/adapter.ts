@@ -127,7 +127,7 @@ export class PokeApiDataSource implements IDataSourceAdapter {
 
         const description = specie.flavor_text_entries
             .find(entry => entry.language.name == this.language)?.flavor_text
-            .replace(/[\n\f\r\t]/g, '') ?? '';
+            .replace(/[\n\f\r\t]/g, ' ') ?? '';
         const lines: Array<string> = []
         const evolutionStage = this.getEvolutionLines(
             apiPokemon.name,
